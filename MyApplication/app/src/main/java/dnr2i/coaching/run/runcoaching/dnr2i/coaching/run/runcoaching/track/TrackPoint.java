@@ -11,6 +11,9 @@ public class TrackPoint {
     private double longitude;
     private double elevation;
     private long time;
+    private double speed;
+    private double hdop;
+    private int sat;
 
     /**
      * constructor
@@ -19,11 +22,14 @@ public class TrackPoint {
      * @param elevation
      * @param time
      */
-    public TrackPoint(double latitude, double longitude, double elevation, long time) {
+    public TrackPoint(double latitude, double longitude, double elevation, long time, double speed, double hdop,int sat) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.elevation = elevation;
         this.time = time;
+        this.speed = speed;
+        this.hdop = hdop;
+        this.sat = sat;
     }
 
     /**
@@ -57,5 +63,29 @@ public class TrackPoint {
     public long getTime() {
         return time;
     }
-    
+
+    /**
+     * getter speed
+     * @return speed
+     */
+    public double getSpeed() {
+        return speed;
+    }
+
+    /**
+     * getter hdop
+     * @return hdop
+     */
+
+    public double getHdop() {
+        return hdop;
+    }
+
+    /**
+     * getter number sattelites
+     * @return sat
+     */
+    public int getSat() {
+        return sat;
+    }
 }

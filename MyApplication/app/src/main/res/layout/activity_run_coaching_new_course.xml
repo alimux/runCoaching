@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_run_coachin_new_course"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="dnr2i.coaching.run.runcoaching.RunCoachingNewCourseActivity">
+
+    <TextView
+        android:text="@string/lblName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="0dp"
+        android:gravity="center_horizontal"
+        android:textSize="24sp"
+        android:id="@+id/lblTrackName"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/trackName"
+        android:gravity="center_horizontal"
+        android:ems="10"
+        android:textSize="24sp"
+        android:id="@+id/trackName"
+        android:layout_marginTop="12dp"
+        android:layout_below="@+id/lblTrackName"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:text="@string/lblSpeed"
+        android:textSize="28dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_horizontal"
+        android:id="@+id/lblSpeed"
+        android:layout_below="@+id/trackName"
+        />
+
+    <TextView
+        android:text="0.0"
+        android:textSize="50dp"
+        android:textColor="@color/colorAccent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:id="@+id/speed"
+        android:layout_below="@+id/lblSpeed"/>
+
+    <Button
+        android:text="@string/stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnStop"
+        android:layout_marginBottom="2dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="@string/lblDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:id="@+id/lblDistance"
+        android:layout_marginBottom="27dp"
+        android:layout_above="@+id/coordinates"
+        android:layout_alignStart="@+id/lblTrackName" />
+
+    <TextView
+        android:text="@string/lblDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:id="@+id/lblDuration"
+        android:layout_marginBottom="38dp"
+        android:layout_above="@+id/lblDistance"
+        android:layout_alignStart="@+id/lblDistance" />
+
+    <TextView
+        android:text="@string/coordinates"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:id="@+id/coordinates"
+        android:layout_above="@+id/btnStart"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="13dp" />
+
+    <TextView
+        android:text="@string/distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:id="@+id/distance"
+        android:layout_alignBaseline="@+id/lblDistance"
+        android:layout_alignBottom="@+id/lblDistance"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:text="@string/duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:id="@+id/duration"
+        android:layout_alignBottom="@+id/lblDuration"
+        android:layout_alignEnd="@+id/speed" />
+
+    <Button
+        android:text="@string/requestLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnStart"
+        android:layout_alignBaseline="@+id/btnStop"
+        android:layout_alignBottom="@+id/btnStop"
+        android:layout_alignStart="@+id/lblDistance" />
+</RelativeLayout>

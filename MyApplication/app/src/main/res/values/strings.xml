@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">Run Coaching</string>
+    <!-- menu activity -->
+    <string name="newCourse">Nouvelle activité</string>
+    <string name="existingCourse">Entraînement</string>
+    <string name="newCourseGM">Nouvelle activité GM</string>
+
+    <!-- New Course activity -->
+    <string name="requestLocation">START</string>
+    <string name="trackName">Nom du parcours</string>
+    <string name="coordinates">Coordonnées</string>
+    <string name="stop">STOP</string>
+    <string name="lblName">Nom de votre parcours :</string>
+    <string name="lblSpeed">Vitesse en km/h</string>
+    <string name="title_activity_run_coaching_new_course_gm">Course</string>
+    <string name="lblDuration">Durée :</string>
+    <string name="lblDistance">Distance : </string>
+    <string name="duration">0:00:00</string>
+    <string name="distance">0 m</string>
 </resources>

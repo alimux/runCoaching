@@ -8,17 +8,22 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
+
+import dnr2i.coaching.run.runcoaching.RunCoachingNewCourseActivity;
+import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.DataHandling;
+
+import static android.location.LocationManager.GPS_PROVIDER;
 
 /**
  * @author Alexandre DUCREUX on 15/02/2017.
- * Class which manage GPS activity
+ *         Class which manage GPS activity
  */
 
 public class GPSTracker extends Service implements LocationListener {
@@ -26,209 +31,103 @@ public class GPSTracker extends Service implements LocationListener {
 
     private LocationManager locationManager;
     private Context context;
-    //gps status
-    private boolean isGPSEnabled = false;
-    private boolean canGetLocation = false;
-    //network status
-    private boolean isNetworkEnabled = false;
-
-    private Location location;
-    private double latitude;
-    private double longitude;
-    private GPSUpdateListener listener;
+    private DataHandling datas;
+    private double currentLatitude = 0;
+    private double currentLongitude = 0;
+    private double lastLatitude = 0;
+    private double lastLongitude = 0;
+    private double distance=0;
+    private Location lastlocation = new Location("last");
 
     //constants Time & Distance udpate
-    private final static double MIN_DISTANCE_UPDATE = 0;
-    private final static long MIN_TIME_UPDATES = 100;
-    //permissions
-    private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
-    private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 12;
+    private final static double MIN_DISTANCE_UPDATE = 5;
+    private final static long MIN_TIME_UPDATES = 500;
+
+
+
+
     //for toast
     private CharSequence message = "";
     private Toast toast;
 
 
-    public GPSTracker(Context context,GPSUpdateListener listener ) {
-        this.context = context;
-        this.listener = listener;
-        getServiceStatus();
-        Log.i("AD","Initialisation du Service GPS");
-    }
+    @Override
+    public void onCreate() {
 
-    public void getServiceStatus(){
-
-        try {
-            Log.i("AD","Tentative d'accès au Service GPS");
-            locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
-
-            //retrieve gps status
-            Log.i("AD","TOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOTTTTTTTTTTTTTTTTTOOOOOOOOOOO");
-            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            Log.i("AD","Statut GPS -> "+isGPSEnabled);
-            //retrieve network status
-            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-            Log.i("AD","Statut du Réseau -> "+isGPSEnabled);
-
-            if (!isGPSEnabled && !isNetworkEnabled) {
-                message = "Aucun fournisseur GPS ou réseau disponible";
-                toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-                toast.show();
-            } else {
-                //provider enable
-                this.canGetLocation = true;
-                if (isNetworkEnabled) {
-                    message = "Utilisation de la géolocalisation par le réseau !";
-                    toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            }
-            //if GPS services is enable
-            if (isGPSEnabled) {
-                    message = "Utilisation de la géolocalisation par le GPS !";
-                    toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-                    toast.show();
-
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        this.context = getBaseContext();
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(GPS_PROVIDER, MIN_TIME_UPDATES, (float) MIN_DISTANCE_UPDATE, this);
+        if(locationManager!=null) {
+            Log.i("AD", "Lancement du service GPS : " + locationManager);
         }
-        if(isGPSEnabled()){
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_UPDATES, (float) MIN_DISTANCE_UPDATE, this);
-            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Log.i("AD","GPS update");
-        }
-        else {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_UPDATES, (float) MIN_DISTANCE_UPDATE, this);
-            locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            Log.i("AD","Network update");
-        }
+        super.onCreate();
 
     }
-    /**
-     * Method which return network / GPS coordinates if provider is available
-     * @return location
-     */
-    private Location getLocation(Location location) {
 
-        this.latitude = location.getLatitude();
-        this.longitude = location.getLongitude();
-          Log.i("AD","-------------------------->Reseau : Test d'envoi data lat :"+latitude);
-
-
-        return location;
-    }
-    public Location getLocation(){
-        return location;
-    }
-
-
-    /**
-     * method which is called if gps is turned-off
-     */
-    public void showSettingsAlert() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-
-        //Settings
-        alertDialog.setTitle("Paramétrages GPS");
-        alertDialog.setMessage("Le GPS n'est pas activé, Souhaitez-vous l'activer?");
-        //if yes
-        alertDialog.setPositiveButton("Paramétrages", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                context.startActivity(intent);
-            }
-        });
-
-        //if cancel
-        alertDialog.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-        alertDialog.show();
-    }
-
-    // getters
-
-    /**
-     * method which stop GPS listener
-     */
-    public void stopUsingGPS() {
-        if (locationManager != null) {
-             locationManager.removeUpdates(GPSTracker.this);
+    @Override
+    public void onDestroy() {
+            locationManager.removeUpdates(this);
             message = "Activité Terminée !";
             toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
             toast.show();
-        }
+
+        super.onDestroy();
     }
-
-    /**
-     * method which checks if GPS or network is available
-     * @return
-     */
-    public boolean CanGetLocation(){
-        Log.i("AD", "GPS activé !!!");
-        return this.canGetLocation;
-    }
-
-    /**
-     * to getLatitude
-     * @return latitude
-     */
-    public double getLatitude() {
-        return latitude;
-    }
-
-    /**
-     * to get longitude
-     * @return longitude
-     */
-    public double getLongitude() {
-        return longitude;
-    }
-
-    /**
-     * get GPS status
-     * @return isGPSEnabled
-     */
-    public boolean isGPSEnabled() {
-        return isGPSEnabled;
-    }
-
-
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        //we don't provide binding, so return null
         return null;
     }
 
     @Override
     public void onLocationChanged(Location location) {
-
-        //retrieve gps information)
-        getLocation(location);
-        listener.onUpdate(location);
-       // Log.i("AD","Mise à jour coordonnées : lat:"+latitude+" lon:"+longitude);
-        long time = location.getTime();
-        double speed = location.getSpeed();
-        double hdop = (location.getAccuracy()/5);
-        double elevation = location.getAltitude();
-        int sat = location.getExtras().getInt("satellites");
+        datas = RunCoachingNewCourseActivity.getDatas();
+        if(locationManager!=null) {
+            if (datas.isRunning()) {
+                double hdop = (location.getAccuracy()/5);
+                currentLatitude = location.getLatitude();
+                currentLongitude = location.getLongitude();
 
 
-        //double travelDistance = getTravelDistance(lat,lon);
+                if (datas.isFirstTime()) {
+                    distance = 0;
+                    lastLatitude = currentLatitude;
+                    lastLongitude = currentLongitude;
+                    datas.setFirstTime(false);
+                }
+                if( lastLatitude!=0 && lastLongitude !=0){
+                    lastlocation.setLatitude(lastLatitude);
+                    lastlocation.setLongitude(lastLongitude);
+                    distance = lastlocation.distanceTo(location);
+                }
 
+                if (location.getAccuracy() < distance ) {
+                    datas.addDistance(distance);
 
-        //recordTrackPoint(lat, lon, time, elevation, speed, hdop, sat);
-        //coordinatesTextView.setText("\n lat : " + lat + " lon : " + lon );
-        //speedTextView.setText(String.valueOf(speedKMperHour));
-        //distanceTextView.setText(String.valueOf(travelDistance));
+                    lastLatitude = currentLatitude;
+                    lastLongitude = currentLongitude;
+                    datas.setCurrentLatitude(lastLatitude);
+                    datas.setCurrentLongitude(lastLongitude);
+                    datas.setHdop(hdop);
+                    datas.setElevation(location.getAltitude());
+                    datas.setSat(location.getExtras().getInt("satellites"));
+                    datas.setTime(location.getTime());
+                }
 
+                if (location.hasSpeed()) {
+                    datas.setCurrentSpeed(location.getSpeed() * 3.6);
+                    if (location.getSpeed() == 0) {
+                        new IsStillStopped().execute();
+                    }
+                }
+                Log.i("AD", "Etat de datas=" + datas + "\n Update infos : speed:" + datas.getCurrentSpeed() + "\n lat:" + datas.getCurrentLatitude() + "\n lon:" + datas.getCurrentLongitude());
+                if (datas != null) {
+                    datas.recordTrackPoint(lastLatitude,lastLongitude,datas.getTime(),datas.getElevation(), datas.getCurrentSpeed(), datas.getCurrentLatitude(), datas.getSat());
+                    datas.update();
+                }
+            }
+        }
     }
 
     @Override
@@ -244,51 +143,82 @@ public class GPSTracker extends Service implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
 
-
     }
 
+    class IsStillStopped extends AsyncTask<Void, Integer, String> {
+        int timer = 0;
 
-
-    /*
-    private void recordTrackPoint(double lat, double lon, long time, double elevation, double speed, double hdop, int sat) {
-
-        TrackPoint trkpt = new TrackPoint(lat, lon, elevation, time, speed, hdop, sat);
-        trackpointsList.add(trkpt);
-
-    }
-    /*
-
-
-    /*
-    private double getTravelDistance(double lat, double lon){
-
-        Location locationA = new Location("Point A");
-        Location locationB = new Location("Point B");
-
-
-        if(latA==0 && lonA==0){
-            latA=lat;
-            lonA=lon;
-            latB=lat;
-            lonB=lon;
-        }
-        else {
-            latA = latB;
-            lonA = lonB;
-            latB = latA;
-            lonB = lonA;
+        @Override
+        protected String doInBackground(Void... unused) {
+            try {
+                while (datas.getCurrentSpeed() == 0) {
+                    Thread.sleep(1000);
+                    timer++;
+                }
+            } catch (InterruptedException t) {
+                return ("The sleep operation failed");
+            }
+            return ("return object when task is finished");
         }
 
-        locationA.setLatitude(latA);
-        locationA.setLongitude(lonA);
+        @Override
+        protected void onPostExecute(String message) {
+            datas.setTimeStopped(timer);
+        }
 
-        locationB.setLatitude(latB);
-        locationB.setLongitude(lonB);
 
-        distance += locationA.distanceTo(locationB)/1000;
 
-        return distance;
 
+        /**
+         * method which is called if gps is turned-off
+         */
+        public void showSettingsAlert() {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+
+            //Settings
+            alertDialog.setTitle("Paramétrages GPS");
+            alertDialog.setMessage("Le GPS n'est pas activé, Souhaitez-vous l'activer?");
+            //if yes
+            alertDialog.setPositiveButton("Paramétrages", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    context.startActivity(intent);
+                }
+            });
+
+            //if cancel
+            alertDialog.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            alertDialog.show();
+        }
+
+        // getters
+
+        /**
+         * to getCurrentLatitude
+         *
+         * @return currentLatitude
+         */
+        public double getCurrentLatitude() {
+            return currentLatitude;
+        }
+
+        /**
+         * to get currentLongitude
+         *
+         * @return currentLongitude
+         */
+        public double getCurrentLongitude() {
+            return currentLongitude;
+        }
     }
-    */
 }
+
+
+
+

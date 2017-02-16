@@ -31,6 +31,11 @@ public class TrackPoint {
         this.hdop = hdop;
         this.sat = sat;
     }
+    public TrackPoint(double latitude, double longitude, long time){
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.time = time;
+    }
 
     /**
      * getter lattitude

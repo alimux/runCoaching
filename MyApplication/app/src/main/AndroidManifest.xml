@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_GPS"/>
+    <uses-permission android:name="android.permission.ACCESS_ASSISTED_GPS"/>
 
     <application
         android:allowBackup="true"
@@ -23,6 +25,7 @@
         </activity>
         <activity android:name=".RunCoachingHomeActivity" />
         <activity android:name=".RunCoachingNewCourseActivity" />
+        <service android:name=".gps.GPSTracker"/>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

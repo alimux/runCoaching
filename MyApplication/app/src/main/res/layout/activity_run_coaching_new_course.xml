@@ -106,7 +106,7 @@
         android:layout_alignBottom="@+id/lblDistance"
         android:layout_centerHorizontal="true" />
 
-    <TextView
+    <Chronometer
         android:text="@string/duration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

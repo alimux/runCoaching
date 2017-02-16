@@ -25,6 +25,10 @@ public class Track {
 
     }
 
+    public void addTrackPoint(TrackPoint point){
+        trackPoints.add(point);
+    }
+
     /**
      *  Getter, method which returns an array of track points
      * @return ArrayList<TrackPoint>
@@ -41,29 +45,7 @@ public class Track {
         return currentPosition;
     }
 
-    /**
-     * Method which consists to return the distance between two trackpoints
-     * @param lat
-     * @param lon
-     * @param lat1
-     * @param lon1
-     * @return length
-     */
-    public double getLength(double lat, double lon, double lat1, double lon1){
-        converter = new DegreesToUTM();
-        converter.convertDegreesToUTM(lat,lon);
-        double posXPointA = converter.getEasting();
-        double posYPointA = converter.getNorthing();
 
-        converter.convertDegreesToUTM(lat1, lon1);
-        double posXPointB = converter.getEasting();
-        double posYPointB = converter.getNorthing();
-
-        double length = Math.sqrt(Math.pow((posXPointB-posXPointA),2)+Math.pow((posYPointB-posYPointA),2));
-        Log.i("INFO LONGUEUR","length : "+length);
-
-        return length;
-    }
 
     public long getDuration(){
         long time=0;

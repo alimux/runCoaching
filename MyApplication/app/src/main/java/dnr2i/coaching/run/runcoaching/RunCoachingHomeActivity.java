@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public class RunCoachingHomeActivity extends AppCompatActivity {
 
@@ -25,15 +26,8 @@ public class RunCoachingHomeActivity extends AppCompatActivity {
         actionBar.setDefaultDisplayHomeAsUpEnabled(true);
         actionBar.setIcon(R.mipmap.run_laucher);
 
-
     }
 
-
-   /* public void newCourse(View v){
-        Intent intent = new Intent(getApplicationContext(), RunCoachingNewCourseActivity.class);
-        startActivity(intent);
-
-    }*/
 
     public void newCourseGM(View v){
         Intent intent = new Intent(getApplicationContext(), RunCoachingNewCourseGM.class);
@@ -58,7 +52,7 @@ public class RunCoachingHomeActivity extends AppCompatActivity {
         alertDialog.setPositiveButton("Nouveau Parcours", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(getApplicationContext(), RunCoachingNewCourseActivity.class);
+                Intent intent = new Intent(RunCoachingHomeActivity.this, RunCoachingNewCourseActivity.class);
                 intent.putExtra("trackName",trackName.getText().toString());
                 context.startActivity(intent);
             }

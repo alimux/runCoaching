@@ -1,28 +1,30 @@
 package dnr2i.coaching.run.runcoaching;
 
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.DataHandling;
 import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.TrackPoint;
+import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.TrackRecorder;
 import dnr2i.coaching.run.runcoaching.gps.GPSTracker;
-import dnr2i.coaching.run.runcoaching.gps.GPSUpdateListener;
 
 
-public class RunCoachingNewCourseActivity extends AppCompatActivity implements GPSUpdateListener{
+public class RunCoachingNewCourseActivity extends AppCompatActivity {
 
     //settings view assets
     private Button btnStart;
@@ -31,10 +33,7 @@ public class RunCoachingNewCourseActivity extends AppCompatActivity implements G
     private TextView trackName;
     private TextView speedTextView;
     private TextView distanceTextView;
-    private TextView durationTextView;
-
-    //gps part
-    private GPSTracker gpsTracker;
+    private Chronometer durationChronometer;
 
     //toast
     private CharSequence message;
@@ -42,19 +41,19 @@ public class RunCoachingNewCourseActivity extends AppCompatActivity implements G
 
     //context
     private Context context;
-    private GPSUpdateListener listener;
+    private DataHandling.onGPSServiceUpdate onGpsServiceUpdate;
 
+    //datas part
+    private static DataHandling datas;
+    private ArrayList<TrackPoint> trackPoints;
 
-    //private LocationListener locationListener;
-    private double distance;
-    private double latA=0;
-    private double latB=0;
-    private double lonA=0;
-    private double lonB=0;
-
-
+    //constants
+    private final static int ACTIVITY = 1;
     //coordinates
     private ArrayList<TrackPoint> trackpointsList = new ArrayList<>();
+
+    public RunCoachingNewCourseActivity() {
+    }
 
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -63,6 +62,15 @@ public class RunCoachingNewCourseActivity extends AppCompatActivity implements G
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_run_coaching_new_course);
 
+        onGpsServiceUpdate = new DataHandling.onGPSServiceUpdate() {
+            @Override
+            public void update() {
+                Log.i("AD", "update view\n infos lat:" + datas.getCurrentLatitude());
+                displayInformation();
+            }
+        };
+        datas = new DataHandling(onGpsServiceUpdate);
+
         //init view assets
         btnStart = (Button) findViewById(R.id.btnStart);
         btnStop = (Button) findViewById(R.id.btnStop);
@@ -70,12 +78,12 @@ public class RunCoachingNewCourseActivity extends AppCompatActivity implements G
         trackName = (TextView) findViewById(R.id.trackName);
         speedTextView = (TextView) findViewById(R.id.speed);
         distanceTextView = (TextView) findViewById(R.id.distance);
-        durationTextView = (TextView) findViewById(R.id.duration);
+        durationChronometer = (Chronometer) findViewById(R.id.duration);
         context = this;
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
 
-        if(b!=null){
+        if (b != null) {
             String trackNameExtra = (String) b.get("trackName");
             trackName.setText(trackNameExtra);
         }
@@ -85,16 +93,25 @@ public class RunCoachingNewCourseActivity extends AppCompatActivity implements G
             @Override
             public void onClick(View v) {
 
-                getGPSTracker();
-                //check if gps is turn-on
-                if(!gpsTracker.CanGetLocation()){
-                    gpsTracker.showSettingsAlert();
-                }
-                else{
-                    message ="GPS / Réseau activé, vous pouvez débuté votre séance !";
-                    toast = Toast.makeText(context,message,Toast.LENGTH_SHORT);
+                if (!datas.isRunning()) {
+                    Log.i("AD", "Lancement du service GPS");
+                    datas.setRunning(true);
+                    datas.setFirstTime(true);
+                    durationChronometer.setBase(SystemClock.elapsedRealtime() - datas.getTime());
+                    durationChronometer.start();
+                    Intent intent = new Intent(RunCoachingNewCourseActivity.this, GPSTracker.class);
+                    intent.putExtra("currentActivity", ACTIVITY);
+                    startService(intent);
+                    message = "GPS / Réseau activé, vous pouvez débuté votre séance !";
+                    toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
 
+                } else {
+                    Log.i("AD", "Pause du service GPS");
+                    durationChronometer.stop();
+                    datas.setRunning(false);
+                    stopService(new Intent(getBaseContext(), GPSTracker.class));
                 }
+
             }
 
         });
@@ -102,40 +119,105 @@ public class RunCoachingNewCourseActivity extends AppCompatActivity implements G
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("AD","Etat gps tracker :"+gpsTracker);
-                if(gpsTracker==null){
-                    message = "Aucune activité lancée !";
-                    toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-                    toast.show();
+                datas.setRunning(false);
+                durationChronometer.stop();
+                datas = new DataHandling(onGpsServiceUpdate);
+                stopService(new Intent(getBaseContext(), GPSTracker.class));
+                resetView();
+                message = "Activité terminée !";
+                toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+                toast.show();
+                if (recordTrack()) {
+                    message = "Fichier bien enregistré !";
+
+                } else {
+                    message = "Un problème est survenu pendant l'enregistrement";
                 }
-                else {
-                    gpsTracker.stopUsingGPS();
-                }
+                toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+                toast.show();
+
+
             }
         });
 
 
+        durationChronometer.setText("00:00:00");
+        durationChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            boolean isPair = true;
+
+            @Override
+            public void onChronometerTick(Chronometer chronometer) {
+                long time;
+                if (datas.isRunning()) {
+                    time = SystemClock.elapsedRealtime() - chronometer.getBase();
+                    datas.setTime(time);
+                } else {
+                    time = datas.getTime();
+                }
+
+                int h = (int) (time / 3600000);
+                int m = (int) (time - h * 3600000) / 60000;
+                int s = (int) (time - h * 3600000 - m * 60000) / 1000;
+                String hh = h < 10 ? "0" + h : h + "";
+                String mm = m < 10 ? "0" + m : m + "";
+                String ss = s < 10 ? "0" + s : s + "";
+                chronometer.setText(hh + ":" + mm + ":" + ss);
+
+                if (datas.isRunning()) {
+                    chronometer.setText(hh + ":" + mm + ":" + ss);
+                } else {
+                    if (isPair) {
+                        isPair = false;
+                        chronometer.setText(hh + ":" + mm + ":" + ss);
+                    } else {
+                        isPair = true;
+                        chronometer.setText("");
+                    }
+                }
+            }
+        });
 
     }
 
-    private void getGPSTracker(){
-        this.listener = this;
-        gpsTracker = new GPSTracker(context, this);
-    }
 
-    private void displayInformation(){
-        //retrieve coordinates
-        double lat = (double) Math.round(gpsTracker.getLocation().getLatitude()*100)/100;
-        double lon = (double) Math.round(gpsTracker.getLocation().getLongitude()*100)/100;
-        //display speed in km/h
-        double speed = (double) Math.round((gpsTracker.getLocation().getSpeed()*3.6)*100)/100;
-        speedTextView.setText(speed+"Km/h");
-        coordinatesTextView.setText("lat : " + lat + " lon : " + lon );
-    }
+    private void displayInformation() {
+
+        distanceTextView.setText(datas.getDistance());
+        double speed = (double) Math.round((datas.getCurrentSpeed() * 3.6) * 100) / 100;
+        speedTextView.setText(String.valueOf(speed));
+        coordinatesTextView.setText("lat:" + datas.getCurrentLatitude() + " lon:" + datas.getCurrentLongitude());
+        trackpointsList = datas.getTrackPointsList();
 
 
-    @Override
-    public void onUpdate(Location location) {
-        displayInformation();
     }
+
+    private void resetView() {
+        speedTextView.setText("0.0");
+        durationChronometer.setText("00:00:00");
+        coordinatesTextView.setText("Coordinates");
+        distanceTextView.setText("0.0km");
+    }
+
+
+    public static DataHandling getDatas() {
+        return datas;
+    }
+
+    public boolean recordTrack() {
+        String tracknameRecord = trackName.getText().toString();
+        if (tracknameRecord == "") {
+            tracknameRecord = "Default";
+        }
+
+        Log.i("AD","nombre enregistrement tracklist :"+trackpointsList.size());
+        for(TrackPoint trackPoint : trackpointsList){
+            message = "lat :"+trackPoint.getLatitude();
+            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+            toast.show();
+        }
+        TrackRecorder trackRecorder = new TrackRecorder(trackpointsList, context, tracknameRecord);
+        return trackRecorder.isSuccess();
+
+    }
+
 }

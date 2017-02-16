@@ -1,4 +1,4 @@
-package dnr2i.coaching.run.runcoaching.record;
+package dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track;
 
 
 import android.content.Context;
@@ -31,6 +31,7 @@ public class TrackRecorder {
     private  Context context;
     private String trackName;
     private CharSequence text;
+    private boolean isSuccess = false;
 
 
 
@@ -113,9 +114,7 @@ public class TrackRecorder {
                     FileOutputStream fos = new FileOutputStream(storage);
                     fos.write(input.getBytes());
                     if(fos!=null) {
-                        text = "Enregistrement effectué : \n"+storage;
-                        toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-                        toast.show();
+                        isSuccess = true;
                         fos.close();
                     }
                 } catch (FileNotFoundException e) {
@@ -141,8 +140,9 @@ public class TrackRecorder {
         return file;
     }
 
-
-
+    public boolean isSuccess() {
+        return isSuccess;
+    }
 }
 
 

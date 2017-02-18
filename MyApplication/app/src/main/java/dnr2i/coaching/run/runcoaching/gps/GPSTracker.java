@@ -16,7 +16,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
-import dnr2i.coaching.run.runcoaching.RunCoachingNewCourseActivity;
+import dnr2i.coaching.run.runcoaching.RunCoachingCourseActivity;
 import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.DataHandling;
 
 import static android.location.LocationManager.GPS_PROVIDER;
@@ -30,6 +30,7 @@ public class GPSTracker extends Service implements LocationListener {
 
 
     private LocationManager locationManager;
+
     private Context context;
     private DataHandling datas;
     private double currentLatitude = 0;
@@ -40,8 +41,8 @@ public class GPSTracker extends Service implements LocationListener {
     private Location lastlocation = new Location("last");
 
     //constants Time & Distance udpate
-    private final static double MIN_DISTANCE_UPDATE = 5;
-    private final static long MIN_TIME_UPDATES = 500;
+    private final static double MIN_DISTANCE_UPDATE = 0;
+    private final static long MIN_TIME_UPDATES = 100;
 
 
 
@@ -82,7 +83,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        datas = RunCoachingNewCourseActivity.getDatas();
+        datas = RunCoachingCourseActivity.getDatas();
         if(locationManager!=null) {
             if (datas.isRunning()) {
                 double hdop = (location.getAccuracy()/5);
@@ -96,7 +97,7 @@ public class GPSTracker extends Service implements LocationListener {
                     lastLongitude = currentLongitude;
                     datas.setFirstTime(false);
                 }
-                if( lastLatitude!=0 && lastLongitude !=0){
+                if( lastLatitude!=0 && lastLongitude !=0 && currentLatitude!=0 && currentLongitude!=0){
                     lastlocation.setLatitude(lastLatitude);
                     lastlocation.setLongitude(lastLongitude);
                     distance = lastlocation.distanceTo(location);
@@ -121,7 +122,6 @@ public class GPSTracker extends Service implements LocationListener {
                         new IsStillStopped().execute();
                     }
                 }
-                Log.i("AD", "Etat de datas=" + datas + "\n Update infos : speed:" + datas.getCurrentSpeed() + "\n lat:" + datas.getCurrentLatitude() + "\n lon:" + datas.getCurrentLongitude());
                 if (datas != null) {
                     datas.recordTrackPoint(lastLatitude,lastLongitude,datas.getTime(),datas.getElevation(), datas.getCurrentSpeed(), datas.getCurrentLatitude(), datas.getSat());
                     datas.update();

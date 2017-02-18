@@ -42,25 +42,28 @@
         android:layout_height="100dp"
         android:layout_marginLeft="0sp"
         android:layout_marginRight="50sp"
-        android:layout_marginTop="80dp"
-        app:srcCompat="@drawable/btn_new_training"
-        android:id="@+id/runNewCourseImgGM"
+        android:layout_marginTop="149dp"
+        app:srcCompat="@drawable/btn_existing_course"
+        android:id="@+id/runExistingCourseImg"
         android:scaleType="fitCenter"
         android:layout_alignParentTop="true"
-        android:onClick="newCourseGM"
-        android:layout_toStartOf="@+id/newCourseGM" />
+        android:onClick="existingCourse"
+        android:layout_toStartOf="@+id/newCourse"
+        />
 
     <TextView
-        android:text="@string/newCourseGM"
-        android:gravity="left"
+        android:text="@string/existingCourse"
         android:textSize="28sp"
+        android:gravity="left"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/newCourseGM"
-        android:onClick="newCourseGM"
+        android:id="@+id/exsistingCourse"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="30dp"
+        android:onClick="existingCourse"
         android:clickable="true"
-        android:layout_below="@+id/newCourse"
-        android:layout_toEndOf="@+id/runNewCourseImg" />
+        android:layout_alignTop="@+id/runExistingCourseImg"
+        android:layout_toEndOf="@+id/runExistingCourseImg" />
 
 
 </RelativeLayout>

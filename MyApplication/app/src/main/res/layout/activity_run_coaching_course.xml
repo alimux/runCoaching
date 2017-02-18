@@ -8,18 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="dnr2i.coaching.run.runcoaching.RunCoachingNewCourseActivity">
-
-    <TextView
-        android:text="@string/lblName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="0dp"
-        android:gravity="center_horizontal"
-        android:textSize="24sp"
-        android:id="@+id/lblTrackName"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
+    tools:context="dnr2i.coaching.run.runcoaching.RunCoachingCourseActivity">
 
     <TextView
         android:layout_width="wrap_content"
@@ -30,32 +19,8 @@
         android:textSize="24sp"
         android:id="@+id/trackName"
         android:layout_marginTop="12dp"
-        android:layout_below="@+id/lblTrackName"
+
         android:layout_centerHorizontal="true" />
-
-    <TextView
-        android:text="@string/lblSpeed"
-        android:textSize="28dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_horizontal"
-        android:id="@+id/lblSpeed"
-        android:layout_below="@+id/trackName"
-        />
-
-    <TextView
-        android:text="0.0"
-        android:textSize="50dp"
-        android:textColor="@color/colorAccent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"
-        android:id="@+id/speed"
-        android:layout_below="@+id/lblSpeed"/>
 
     <Button
         android:text="@string/stop"
@@ -74,7 +39,7 @@
         android:id="@+id/lblDistance"
         android:layout_marginBottom="27dp"
         android:layout_above="@+id/coordinates"
-        android:layout_alignStart="@+id/lblTrackName" />
+         />
 
     <TextView
         android:text="@string/lblDuration"
@@ -123,4 +88,59 @@
         android:layout_alignBaseline="@+id/btnStop"
         android:layout_alignBottom="@+id/btnStop"
         android:layout_alignStart="@+id/lblDistance" />
+
+    <TextView
+        android:text="0.0"
+        android:textSize="50dp"
+        android:textColor="@color/colorAccent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/speed"
+        android:layout_above="@+id/lblDuration"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp" />
+
+    <TextView
+        android:text="@string/lblSpeed"
+        android:textSize="28sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:id="@+id/lblSpeed"
+        android:layout_above="@+id/speed"
+        android:layout_toEndOf="@+id/lblDuration" />
+
+    <TextView
+        android:text="@string/goallbl"
+        android:textSize="20sp"
+        android:layout_width="90dp"
+        android:layout_height="25dp"
+        android:id="@+id/goallbl"
+        android:layout_above="@+id/lblSpeed"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="19dp" />
+
+    <TextView
+        android:text="@string/goal"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:layout_width="90dp"
+        android:layout_height="25dp"
+        android:id="@+id/goal"
+        android:layout_alignBaseline="@+id/goallbl"
+        android:layout_alignBottom="@+id/goallbl"
+        android:layout_toEndOf="@+id/lblDistance" />
+
+    <TextView
+        android:text="@string/timeStatus"
+        android:textSize="20sp"
+        android:gravity="center_horizontal"
+        android:layout_width="90dp"
+        android:layout_height="25dp"
+        android:id="@+id/timeStatus"
+        android:layout_marginLeft="100dp"
+        android:layout_alignBaseline="@+id/goal"
+        android:layout_alignBottom="@+id/goal"
+        android:layout_toEndOf="@+id/coordinates"
+        android:layout_marginStart="15dp" />
 </RelativeLayout>

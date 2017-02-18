@@ -7,8 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_GPS"/>
-    <uses-permission android:name="android.permission.ACCESS_ASSISTED_GPS"/>
+    <uses-permission android:name="android.permission.ACCESS_GPS" />
+    <uses-permission android:name="android.permission.ACCESS_ASSISTED_GPS" />
 
     <application
         android:allowBackup="true"
@@ -24,8 +24,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".RunCoachingHomeActivity" />
-        <activity android:name=".RunCoachingNewCourseActivity" />
-        <service android:name=".gps.GPSTracker"/>
+        <activity android:name=".RunCoachingCourseActivity" />
+
+        <service android:name=".gps.GPSTracker" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -40,8 +41,10 @@
 
         <activity
             android:name=".RunCoachingNewCourseGM"
-            android:label="@string/title_activity_run_coaching_new_course_gm"></activity>
-        <receiver android:name=".RunCoachingNewCourseActivity" />
+            android:label="@string/title_activity_run_coaching_new_course_gm" />
+
+        <receiver android:name=".RunCoachingCourseActivity" />
+
     </application>
 
 </manifest>

@@ -1,11 +1,22 @@
 package dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track;
 
+import android.content.Context;
+import android.os.Environment;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 import android.util.Log;
+import android.widget.Toast;
 
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * @author Alexandre DUCREUX on 15/02/2017.
@@ -34,6 +45,11 @@ public class DataHandling{
     //Trackpoints
     private ArrayList<TrackPoint> trackPointsList;
 
+    //type activity
+    private int activityStatus;
+    //content handler
+    private ContentHandler contentHandler;
+
     //listener
     private onGPSServiceUpdate onGpsServiceUpdate;
 
@@ -48,15 +64,21 @@ public class DataHandling{
         this.maxSpeed = 0;
         this.timeStopped = 0;
         this.trackPointsList = new ArrayList<>();
+        this.activityStatus = 0;
+
     }
 
     public interface onGPSServiceUpdate {
         void update();
     }
 
-    public  DataHandling(onGPSServiceUpdate onGpsServiceUpdate){
+    public  DataHandling(onGPSServiceUpdate onGpsServiceUpdate, int activityStatus){
         this();
         setOnGPSServiceUpdate(onGpsServiceUpdate);
+        this.activityStatus =activityStatus;
+        if(activityStatus==1){
+            contentHandler = new ContentHandler();
+        }
     }
 
     public void update() {
@@ -185,9 +207,9 @@ public class DataHandling{
         TrackPoint trkpt = new TrackPoint(lat, lon, elevation, time, speed, hdop, sat);
         this.trackPointsList.add(trkpt);
         for(TrackPoint trk : trackPointsList){
-            Log.i("AD","arrayList : lat:"+trk.getLatitude()+" lon:"+trk.getLongitude());
+           // Log.i("AD","arrayList : lat:"+trk.getLatitude()+" lon:"+trk.getLongitude());
         }
-        Log.i("AD","nombre enregistrement tracklist dans le recording :"+trackPointsList.size());
+        //Log.i("AD","nombre enregistrement tracklist dans le recording :"+trackPointsList.size());
         getTrackPointsList();
     }
 
@@ -196,7 +218,49 @@ public class DataHandling{
     }
 
     public ArrayList<TrackPoint> getTrackPointsList() {
-        Log.i("AD","nombre enregistrement tracklist getter :"+trackPointsList.size());
+       // Log.i("AD","nombre enregistrement tracklist getter :"+trackPointsList.size());
         return this.trackPointsList;
     }
+
+    public  void createVirtualCourse(String filename, Context context){
+
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+
+        try {
+            Log.i("AD","nom du fichier à récupérer : "+filename+"\n contentHandler status : "+contentHandler);
+            File file = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), filename);
+            if(file.exists()) {
+                String fileToParse = String.valueOf(file);
+                Log.i("AD","Lancement du parsing du fichier : "+fileToParse);
+                SAXParser saxParser = factory.newSAXParser();
+                saxParser.parse(file, contentHandler);
+                //launch computing
+                for(int i=0;i<contentHandler.getTracks().size();i++){
+                    computeVirtualCourseDatas(i);
+                }
+                CharSequence message = "Parcours virtuel bien créer !";
+                Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+            else {
+                CharSequence message = "Fichier non trouvé !";
+                Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        } catch (ParserConfigurationException |SAXException | IOException ex){
+            ex.printStackTrace();
+        }
+
+    }
+
+    public ContentHandler getContentHandler() {
+        return contentHandler;
+    }
+
+    public void computeVirtualCourseDatas(int i){
+        contentHandler.getTracks().get(i).setTotalDistance();
+        contentHandler.getTracks().get(i).setTotalTime();
+        contentHandler.getTracks().get(i).setIntermediatesTime();
+    }
+
 }

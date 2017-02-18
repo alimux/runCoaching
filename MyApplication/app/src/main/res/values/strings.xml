@@ -5,8 +5,8 @@
     <string name="existingCourse">Entraînement</string>
     <string name="newCourseGM">Nouvelle activité GM</string>
 
-    <!-- New Course activity -->
-    <string name="requestLocation">START</string>
+    <!--Course activity -->
+    <string name="requestLocation">START/PAUSE</string>
     <string name="trackName">Nom du parcours</string>
     <string name="coordinates">Coordonnées</string>
     <string name="stop">STOP</string>
@@ -17,4 +17,7 @@
     <string name="lblDistance">Distance : </string>
     <string name="duration">0:00:00</string>
     <string name="distance">0 m</string>
+    <string name="goallbl">Objectifs : </string>
+    <string name="goal">0:00:00</string>
+    <string name="timeStatus">Avance/Retard</string>
 </resources>

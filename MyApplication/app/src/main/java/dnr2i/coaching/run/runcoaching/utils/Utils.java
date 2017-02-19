@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 /**
  * @author Alexandre DUCREUX on 14/02/2017.
- * class util
+ * class util used for external storage
  */
 
 public class Utils {

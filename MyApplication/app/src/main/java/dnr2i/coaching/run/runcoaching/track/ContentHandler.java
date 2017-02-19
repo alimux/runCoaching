@@ -1,13 +1,9 @@
-package dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track;
-
-import android.sax.Element;
-import android.util.Log;
+package dnr2i.coaching.run.runcoaching.track;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 

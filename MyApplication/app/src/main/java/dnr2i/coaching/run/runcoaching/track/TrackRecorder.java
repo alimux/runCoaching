@@ -1,4 +1,4 @@
-package dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track;
+package dnr2i.coaching.run.runcoaching.track;
 
 
 import android.content.Context;
@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 
-import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.TrackPoint;
 import dnr2i.coaching.run.runcoaching.utils.Utils;
 
 /**
@@ -34,7 +33,12 @@ public class TrackRecorder {
     private boolean isSuccess = false;
 
 
-
+    /**
+     * constructor
+     * @param trkpt
+     * @param context
+     * @param trackName
+     */
     public TrackRecorder(ArrayList<TrackPoint> trkpt, Context context, String trackName){
         Log.i("AD","Initialisation de l'enregistrement");
         this.trackName = trackName;
@@ -44,6 +48,11 @@ public class TrackRecorder {
         createFile(this.input, this.trackName);
     }
 
+    /**
+     * Method which serializes in XML a trackpoint list before sending in a gpx file
+     * @param trackPoints
+     * @return
+     */
     private String writeGPXFile(ArrayList<TrackPoint> trackPoints){
 
         XmlSerializer serializer = Xml.newSerializer();
@@ -84,8 +93,6 @@ public class TrackRecorder {
                 serializer.endTag("","trkpt");
 
             }
-
-
             serializer.endTag("","trk");
             serializer.endTag("","gpx");
             serializer.endDocument();
@@ -96,9 +103,14 @@ public class TrackRecorder {
         }
 
     }
+
+    /**
+     * Method which creates the gpx file
+     * @param input
+     * @param trackName
+     */
     private void createFile(String input, String trackName){
-
-
+            //if storage is available and writable
             if(Utils.isExternalStorageWritable()) {
 
                 text = "Carte SD détectée, Tentative d'enregistrement..";
@@ -111,6 +123,7 @@ public class TrackRecorder {
                 Log.i("AD", "External storage : " + storage);
 
                 try {
+                    //recording
                     FileOutputStream fos = new FileOutputStream(storage);
                     fos.write(input.getBytes());
                     if(fos!=null) {
@@ -128,6 +141,10 @@ public class TrackRecorder {
 
     }
 
+    /**
+     * Method wich creates directory of the course if not exist and set the path of future recording file
+     * @return
+     */
     private File getNameStorage(){
         //private final static File PATH = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         File file = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), trackName);
@@ -140,6 +157,10 @@ public class TrackRecorder {
         return file;
     }
 
+    /**
+     * if the file is really reccorded, return true
+     * @return boolean
+     */
     public boolean isSuccess() {
         return isSuccess;
     }

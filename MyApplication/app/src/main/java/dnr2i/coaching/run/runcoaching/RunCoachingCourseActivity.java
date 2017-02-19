@@ -24,10 +24,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.DataHandling;
-import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.Track;
-import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.TrackPoint;
-import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.TrackRecorder;
+import dnr2i.coaching.run.runcoaching.track.DataHandling;
+import dnr2i.coaching.run.runcoaching.track.Track;
+import dnr2i.coaching.run.runcoaching.track.TrackPoint;
+import dnr2i.coaching.run.runcoaching.track.TrackRecorder;
 import dnr2i.coaching.run.runcoaching.gps.GPSTracker;
 import dnr2i.coaching.run.runcoaching.utils.Utils;
 
@@ -48,6 +48,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     //toast
     private CharSequence message;
+    private CharSequence endMessage;
     private Toast toast;
 
     //context
@@ -73,7 +74,11 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
     public RunCoachingCourseActivity() {
     }
 
-
+    /**
+     * Initialize view, This activity content new course and exisiting course
+     * An extra was putted in home activity to make a difference between these two activities
+     * @param savedInstanceState
+     */
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +109,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         context = this;
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
-
+        //if extra is not null retrieve trackname & activity status
         if (b != null) {
             String trackNameExtra = (String) b.get("trackName");
             String tmpStatus = (String) b.get("courseStatus");
@@ -112,6 +117,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
             Log.i("AD", "ActivityStatus :" + activityStatus);
             trackName.setText(trackNameExtra);
         }
+        //initialize listener
         onGpsServiceUpdate = new DataHandling.onGPSServiceUpdate() {
             @Override
             public void update() {
@@ -119,8 +125,9 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
                 displayInformation();
             }
         };
+        //instantiating datas handling
         datas = new DataHandling(onGpsServiceUpdate, activityStatus);
-
+        //set visible only if existing course
         if (activityStatus == 1) {
             chooseDifficulty();
             goal.setVisibility(View.VISIBLE);
@@ -132,7 +139,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
             goallbl.setVisibility(View.INVISIBLE);
         }
 
-        //start new course
+        //start course
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -141,12 +148,13 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
                     Log.i("AD", "Lancement du service GPS");
                     datas.setRunning(true);
                     datas.setFirstTime(true);
-                    durationChronometer.setBase(SystemClock.elapsedRealtime() - datas.getTime());
-                    durationChronometer.start();
+                        durationChronometer.setBase(SystemClock.elapsedRealtime() - datas.getTime());
+                        durationChronometer.start();
                     Intent intent = new Intent(RunCoachingCourseActivity.this, GPSTracker.class);
                     startService(intent);
-                    message = "GPS / Réseau activé, vous pouvez débuté votre séance !";
+                    message = "GPS / Réseau activé, vous pouvez débuté votre séance quand le chrono débutera !";
                     toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+                    toast.show();
 
                 } else {
                     Log.i("AD", "Pause du service GPS");
@@ -158,7 +166,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
             }
 
         });
-
+        //stop course
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -178,12 +186,15 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
                 }
                 toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
                 toast.show();
+                if(activityStatus==1){
+                    EndExistingCourse((String) endMessage);
+                }
 
 
             }
         });
 
-
+        //initialize chronometer
         durationChronometer.setText("00:00:00");
         durationChronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
             boolean isPair = true;
@@ -191,7 +202,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
             @Override
             public void onChronometerTick(Chronometer chronometer) {
                 long time;
-                if (datas.isRunning()) {
+                if (datas.isRunning() && datas.getLocation()!=null) {
                     time = SystemClock.elapsedRealtime() - chronometer.getBase();
                     datas.setTime(time);
                 } else {
@@ -222,7 +233,9 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * method which display information about distance, speed, coordinates, and if it's an existing course, launching a follow-up of the course
+     */
     private void displayInformation() {
 
         distanceTextView.setText(datas.getDistance());
@@ -236,6 +249,9 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * method which reset all views
+     */
     private void resetView() {
         speedTextView.setText("0.0");
         durationChronometer.setText("00:00:00");
@@ -247,7 +263,10 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * method which retrieve datas
+     * @return DataHandling
+     */
     public static DataHandling getDatas() {
         return datas;
     }
@@ -263,6 +282,9 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Method which display goal time if is an existing course
+     */
     private void displayGoalTime() {
         Log.i("AD","Difficulté choisie : "+difficulty);
         goalTime = datas.goalTime(0, difficulty);
@@ -276,16 +298,19 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         goal.setText(hh + ":" + mm + ":" + ss);
     }
 
+    /**
+     * Methods which retrieve the follow-up of the course
+     */
     private void displayFollowUp() {
 
         int segment = datas.getContentHandler().getTracks().get(0).getSegmentNumber();
         int currentSegment = 0;
         int currentDistance = (int) datas.getDistanceM();
-
+        //int currentDistance = 100;
         long currentTime = SystemClock.elapsedRealtime() - durationChronometer.getBase();
-        String message = "";
-        int coef = 0;
-        Log.i("AD", "appel follow up :GoalTime:" + goalTime + " CurrentTime:" + currentTime);
+        int coef;
+        int distanceSegmentExpected;
+        //Log.i("AD", "appel follow up :GoalTime:" + goalTime + " CurrentTime:" + currentTime+ "currentSegment"+currentSegment+"current Distance"+currentDistance);
 
         if (datas.getContentHandler().getTracks().get(0).getSegmentType() == 0) {
             coef = 100;
@@ -294,18 +319,19 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         }
         if (currentSegment == segment) {
             if (datas.timeFollowUp(0, currentTime, currentSegment)) {
-                message = "Bravo vous avez réussi votre entraînement avec Brio !";
+                endMessage = "Bravo vous avez réussi votre entraînement avec Brio !";
             } else {
-                message = "Oups, vous ferez mieux la prochaine fois !";
+                endMessage = "Oups, vous ferez mieux la prochaine fois !";
             }
-            EndExistingCourse(message);
+
         }
         if (currentTime >= goalTime) {
             timeStatus.setText("rapé...");
             Log.i("AD", "rapé!");
         }
-
-        if (currentDistance == (currentSegment + 1 * coef)) {
+        distanceSegmentExpected = (1+currentSegment)*coef;
+        //Log.i("AD", "Distance du segment courant attendu :" + distanceSegmentExpected);
+        if (currentDistance == distanceSegmentExpected) {
             if (datas.timeFollowUp(0, currentTime, currentSegment)) {
                 timeStatus.setText("En avance !");
             } else {
@@ -317,11 +343,15 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     }
 
-    public void EndExistingCourse(String message) {
+    /**
+     * method which return an alert dialog when the course is over
+     * @param endMessage
+     */
+    public void EndExistingCourse(String endMessage) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
 
         //Settings
-        alertDialog.setTitle("Course Terminée");
+        alertDialog.setTitle("Course Terminée\n"+endMessage);
         alertDialog.setIcon(R.drawable.mr_ic_play_dark);
         alertDialog.setMessage(message + "\n voulez-vous enregistrer votre performance?");
         alertDialog.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
@@ -342,6 +372,9 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * method which allows to select a difficulty index
+     */
     public void chooseDifficulty() {
         if (Utils.isExternalStorageWritable()) {
             message = "Mémoire en Lecture disponible \n Création du parcours virtuel en cours !";
@@ -411,7 +444,9 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Android overide method when activity is stopped
+     */
     @Override
     protected void onStop() {
         super.onStop();
@@ -421,7 +456,12 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         stopService(new Intent(getBaseContext(), GPSTracker.class));
     }
 
-
+    /**
+     * methods API 23 Marshmallow of security storage
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //super.onRequestPermissionsResult(requestCode, permissions, grantResults);

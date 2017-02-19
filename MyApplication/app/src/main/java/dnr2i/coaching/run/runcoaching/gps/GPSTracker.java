@@ -1,9 +1,7 @@
 package dnr2i.coaching.run.runcoaching.gps;
 
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
@@ -14,23 +12,20 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import dnr2i.coaching.run.runcoaching.RunCoachingCourseActivity;
-import dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track.DataHandling;
+import dnr2i.coaching.run.runcoaching.track.DataHandling;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 
 /**
  * @author Alexandre DUCREUX on 15/02/2017.
- *         Class which manage GPS activity
+ * Class which manage GPS  - Android Service
  */
 
 public class GPSTracker extends Service implements LocationListener {
 
-
     private LocationManager locationManager;
-
     private Context context;
     private DataHandling datas;
     private double currentLatitude = 0;
@@ -38,23 +33,25 @@ public class GPSTracker extends Service implements LocationListener {
     private double lastLatitude = 0;
     private double lastLongitude = 0;
     private double distance = 0;
+    private float speed = 0;
     private Location lastlocation = new Location("last");
 
     //constants Time & Distance udpate
-    private final static double MIN_DISTANCE_UPDATE = 0;
-    private final static long MIN_TIME_UPDATES = 100;
+    private final static float MIN_DISTANCE_UPDATE = 0f;
+    private final static long MIN_TIME_UPDATES = 100L;
+    private final static  int DELTA = 3;
 
-    //for toast
-    private CharSequence message = "";
-    private Toast toast;
-
-
+    /**
+     * Method which is called when service is started
+     * Launch Locoation manager to retrieve gps data if Localization is turn-on
+     */
     @Override
     public void onCreate() {
-
+        //initialize location manager
         this.context = getBaseContext();
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(GPS_PROVIDER, MIN_TIME_UPDATES, (float) MIN_DISTANCE_UPDATE, this);
+        //settings of the updates
+        locationManager.requestLocationUpdates(GPS_PROVIDER, MIN_TIME_UPDATES, MIN_DISTANCE_UPDATE, this);
         if (locationManager != null) {
             Log.i("AD", "Lancement du service GPS : " + locationManager);
         }
@@ -62,27 +59,46 @@ public class GPSTracker extends Service implements LocationListener {
 
     }
 
+    /**
+     * method which is called when the service is stopped
+     */
     @Override
     public void onDestroy() {
+        //remove location manager so stop update
         locationManager.removeUpdates(this);
         super.onDestroy();
     }
 
+    /**
+     * Location Listener part, these methods manage update, provider status...
+     * @param intent
+     * @return
+     */
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
+    /**
+     * Methods which retrieve all datas, set information contents in DataHandling
+     * Retrieve coordinates, time, elevation, hdop, sat, accuracy, speed.
+     * @param location
+     */
     @Override
     public void onLocationChanged(Location location) {
+
         datas = RunCoachingCourseActivity.getDatas();
-        if (locationManager != null) {
+        //if location manager & location not null update datas
+        if (locationManager != null && location != null) {
+            datas.setLocation(location);
+            double accuracy =  location.getAccuracy()+DELTA;
+            long currentTime = System.currentTimeMillis();
             if (datas.isRunning()) {
                 double hdop = (location.getAccuracy() / 5);
+
                 currentLatitude = location.getLatitude();
                 currentLongitude = location.getLongitude();
-
 
                 if (datas.isFirstTime()) {
                     distance = 0;
@@ -90,32 +106,34 @@ public class GPSTracker extends Service implements LocationListener {
                     lastLongitude = currentLongitude;
                     datas.setFirstTime(false);
                 }
-                if (lastLatitude != 0 && lastLongitude != 0 && currentLatitude != 0 && currentLongitude != 0) {
-                    lastlocation.setLatitude(lastLatitude);
-                    lastlocation.setLongitude(lastLongitude);
-                    distance = lastlocation.distanceTo(location);
-                }
 
-                if (location.getAccuracy() < distance) {
-                    datas.addDistance(distance);
-
-                    lastLatitude = currentLatitude;
-                    lastLongitude = currentLongitude;
-                    datas.setCurrentLatitude(lastLatitude);
-                    datas.setCurrentLongitude(lastLongitude);
-                    datas.setHdop(hdop);
-                    datas.setElevation(location.getAltitude());
-                    datas.setSat(location.getExtras().getInt("satellites"));
-
-                    datas.setTime(location.getTime());
-                }
+                lastlocation.setLatitude(lastLatitude);
+                lastlocation.setLongitude(lastLongitude);
+                distance = lastlocation.distanceTo(location);
 
                 if (location.hasSpeed()) {
-                    datas.setCurrentSpeed(location.getSpeed() * 3.6);
+                    Log.i("AD", "Hasspeed : "+location.hasSpeed()+"Location accuracy : " + (location.getAccuracy()+5) + " distance : " + distance);
+                    speed = location.getSpeed();
+                    datas.setCurrentSpeed(speed);
                     if (location.getSpeed() == 0) {
                         new IsStillStopped().execute();
+                    }else {
+
+                        if (accuracy < distance) {
+                            Log.i("AD", "------------------------------------>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                            datas.addDistance(distance);
+                            lastLatitude = currentLatitude;
+                            lastLongitude = currentLongitude;
+                            datas.setCurrentLatitude(lastLatitude);
+                            datas.setCurrentLongitude(lastLongitude);
+                            datas.setHdop(hdop);
+                            datas.setElevation(location.getAltitude());
+                            datas.setSat(location.getExtras().getInt("satellites"));
+                            datas.setTime(currentTime);
+                        }
                     }
                 }
+                Log.i("AD", "Etat de datas=" + datas + "\n test time system " + System.currentTimeMillis() + "\n Update time" + datas.getTime() + "infos : speed:" + datas.getCurrentSpeed() + "\n lat:" + datas.getCurrentLatitude() + "\n lon:" + datas.getCurrentLongitude());
                 if (datas != null) {
                     datas.recordTrackPoint(lastLatitude, lastLongitude, datas.getTime(), datas.getElevation(), datas.getCurrentSpeed(), datas.getCurrentLatitude(), datas.getSat());
                     datas.update();
@@ -134,6 +152,10 @@ public class GPSTracker extends Service implements LocationListener {
 
     }
 
+    /**
+     * if provider is disable display the window of gps activation
+     * @param provider
+     */
     @Override
     public void onProviderDisabled(String provider) {
         Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -142,6 +164,9 @@ public class GPSTracker extends Service implements LocationListener {
 
     }
 
+    /**
+     * Async Task when timer is in pause
+     */
     class IsStillStopped extends AsyncTask<Void, Integer, String> {
         int timer = 0;
 
@@ -161,35 +186,6 @@ public class GPSTracker extends Service implements LocationListener {
         @Override
         protected void onPostExecute(String message) {
             datas.setTimeStopped(timer);
-        }
-
-
-        /**
-         * method which is called if gps is turned-off
-         */
-        public void showSettingsAlert() {
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-
-            //Settings
-            alertDialog.setTitle("Paramétrages GPS");
-            alertDialog.setMessage("Le GPS n'est pas activé, Souhaitez-vous l'activer?");
-            //if yes
-            alertDialog.setPositiveButton("Paramétrages", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    context.startActivity(intent);
-                }
-            });
-
-            //if cancel
-            alertDialog.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
-            alertDialog.show();
         }
 
 

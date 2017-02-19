@@ -1,4 +1,4 @@
-package dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track;
+package dnr2i.coaching.run.runcoaching.track;
 
 import android.location.Location;
 import android.util.Log;
@@ -88,7 +88,7 @@ public class Track {
     public void setIntermediatesTime(){
 
         setSegment(totalDistance);
-        //Log.i("AD", "taile de trackpoints : "+trackPoints.size());
+        Log.i("AD", "taile de trackpoints : "+trackPoints.size());
         double tmpTotalDistance = 0;
         int j=1;
         for (int i=0; i<trackPoints.size()-1;i++){
@@ -97,13 +97,13 @@ public class Track {
             float[] results = new float[3];
             Location.distanceBetween(trackpointA.getLatitude(), trackpointA.getLongitude(), trackPointB.getLatitude(), trackPointB.getLongitude(), results);
             tmpTotalDistance+=results[0];
-           // Log.i("AD", "Distance / tour "+tmpTotalDistance);
+            Log.i("AD", "Distance / tour "+tmpTotalDistance);
             if(segmentType==0) {
                 //Log.i("AD", "Segment type 0");
                 if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("00")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("00"))-1 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("01"))) {
                     //Log.i("AD", "MATCH !!!!!!!!!!");
                     this.intermediatesTime.add(trackPoints.get(i));
-                    //Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
+                    Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
                     j++;
                 }
             }
@@ -112,7 +112,7 @@ public class Track {
                 if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("000")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("000"))-1 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("001"))) {
                     //Log.i("AD", "MATCH !!!!!!!!!!");
                     this.intermediatesTime.add(trackPoints.get(i));
-                    //Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
+                    Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
                     j++;
                 }
             }
@@ -123,13 +123,17 @@ public class Track {
             this.intermediatesTime.add(trackPoints.get(trackPoints.size() - 1));
         }
 
-        //Log.i("AD", "nombre d'enregistrement dans le tableau des références temporelles : "+this.intermediatesTime.size());
+        Log.i("AD", "nombre d'enregistrement dans le tableau des références temporelles : "+this.intermediatesTime.size());
         for(int k=0;k<this.intermediatesTime.size();k++){
             //Log.i("AD", "Trackpoint enregistré latitude : "+this.intermediatesTime.get(k).getLatitude());
         }
 
     }
 
+    /**
+     * Methods defines the numbers of segments of the existing course
+     * @param totalDistance
+     */
     public void setSegment(double totalDistance){
 
         if(totalDistance<1000){
@@ -143,22 +147,42 @@ public class Track {
         //Log.i("AD", "nombre de segment : "+segmentNumber);
     }
 
+    /**
+     * getter total distance of the selected course
+     * @return totalDistance
+     */
     public double getTotalDistance() {
         return totalDistance;
     }
 
+    /**
+     * getter totalTime of selected course
+     * @return totalTime
+     */
     public long getTotalTime() {
         return totalTime;
     }
 
+    /**
+     * getter segment number
+     * @return segmentNumber
+     */
     public int getSegmentNumber() {
         return segmentNumber;
     }
 
+    /**
+     *  getter ArrayList of the intermediates time
+     * @return intermediatesTime
+     */
     public ArrayList<TrackPoint> getIntermediatesTime() {
         return intermediatesTime;
     }
 
+    /**
+     * Getter segment type (0 if distance <1000 & 1 if > 1000
+     * @return segmentType
+     */
     public int getSegmentType() {
         return segmentType;
     }

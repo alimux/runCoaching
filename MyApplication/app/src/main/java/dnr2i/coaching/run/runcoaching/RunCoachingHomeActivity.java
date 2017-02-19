@@ -14,9 +14,13 @@ import android.widget.Toast;
 
 import dnr2i.coaching.run.runcoaching.utils.Utils;
 
+/**
+ * @author Alexandre DUCREUX 14/02/2017
+ * Home class activity, manage menu and start selected activity
+ */
 public class RunCoachingHomeActivity extends AppCompatActivity {
 
-
+    //initialize
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +82,11 @@ public class RunCoachingHomeActivity extends AppCompatActivity {
         });
         alertDialog.show();
     }
+
+    /**
+     * starts existing course
+     * @param v
+     */
     public void existingCourse(View v){
 
         //initialize alert dialog layout
@@ -86,7 +95,7 @@ public class RunCoachingHomeActivity extends AppCompatActivity {
 
         //retrieve existing course
         final String[] tracknameList = Utils.getTracknameList(context);
-
+        //if there is no file present
         if(tracknameList==null){
             CharSequence message = "Aucun parcours enregistré...";
             Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);

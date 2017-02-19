@@ -1,4 +1,4 @@
-package dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track;
+package dnr2i.coaching.run.runcoaching.track;
 
 /**
  * Created by alexandre DUCREUX on 01/02/2017.
@@ -17,7 +17,7 @@ public class TrackPoint {
 
 
     /**
-     * constructor
+     * constructors
      * @param latitude
      * @param longitude
      * @param elevation

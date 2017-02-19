@@ -1,6 +1,7 @@
-package dnr2i.coaching.run.runcoaching.dnr2i.coaching.run.runcoaching.track;
+package dnr2i.coaching.run.runcoaching.track;
 
 import android.content.Context;
+import android.location.Location;
 import android.os.Environment;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
@@ -19,6 +20,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 /**
+ * class which handles the running data
  * @author Alexandre DUCREUX on 15/02/2017.
  */
 
@@ -32,7 +34,7 @@ public class DataHandling{
 
     private double distanceKm;
     private double distanceM;
-    private  double currentSpeed;
+    private float currentSpeed;
     private double maxSpeed;
 
     private double elevation;
@@ -50,10 +52,21 @@ public class DataHandling{
     //content handler
     private ContentHandler contentHandler;
 
+    //location
+    private Location location;
+
     //listener
     private onGPSServiceUpdate onGpsServiceUpdate;
 
-
+    /**
+     * Listener
+     */
+    public interface onGPSServiceUpdate {
+        void update();
+    }
+    /**
+     * constructors
+     */
 
     public DataHandling(){
 
@@ -62,14 +75,9 @@ public class DataHandling{
         this.distanceM = 0;
         this.currentSpeed = 0;
         this.maxSpeed = 0;
-        this.timeStopped = 0;
         this.trackPointsList = new ArrayList<>();
         this.activityStatus = 0;
 
-    }
-
-    public interface onGPSServiceUpdate {
-        void update();
     }
 
     public  DataHandling(onGPSServiceUpdate onGpsServiceUpdate, int activityStatus){
@@ -81,19 +89,35 @@ public class DataHandling{
         }
     }
 
+    /**
+     * @override method of the listener
+     */
     public void update() {
         onGpsServiceUpdate.update();
     }
 
+    /**
+     * setter listener
+     * @param onGpsServiceUpdate
+     */
     public void setOnGPSServiceUpdate(onGPSServiceUpdate onGpsServiceUpdate){
         Log.i("AD","Assignation du Listener"+onGpsServiceUpdate);
         this.onGpsServiceUpdate = onGpsServiceUpdate;
     }
+
+    /**
+     * methods which add a distance to a course Meter,  and Km
+     * @param distance
+     */
     public void addDistance(double distance){
         distanceM = distanceM + distance;
         distanceKm = distanceM / 1000f;
     }
 
+    /**
+     * getter distance, return Spannable String (Android String whith shaping)
+     * @return s
+     */
     public SpannableString getDistance(){
         SpannableString s;
         if(distanceKm<1){
@@ -107,55 +131,95 @@ public class DataHandling{
         return s;
     }
 
+    /**
+     * not implemented, but can getmaxspeed of the user
+     * @return s
+     */
     public SpannableString getMaxSpeed(){
         SpannableString s = new SpannableString(String.format("%.0f", maxSpeed) + "Km/h");
         s.setSpan(new RelativeSizeSpan(0.5f), s.length() -4, s.length(), 0);
         return s;
     }
 
-    public void setCurrentSpeed(double currentSpeed){
+    /**
+     * setter current speed
+     * @param currentSpeed
+     */
+    public void setCurrentSpeed(float currentSpeed){
         this.currentSpeed = currentSpeed;
         if(currentSpeed > maxSpeed){
             maxSpeed = currentSpeed;
         }
     }
 
+    /**
+     * method which return if the start button is launched
+     * @return boolean
+     */
     public boolean isRunning(){
         return isRunning;
     }
 
+    /**
+     * setter is running
+     * @param isRunning
+     */
     public void setRunning(boolean isRunning){
         this.isRunning = isRunning;
     }
 
-    public void setTimeStopped(long timeStopped) {
-        this.timeStopped += timeStopped;
-    }
-
-    public double getCurrentSpeed() {
+    /**
+     * getter currentSpeed
+     * @return currentSpeed
+     */
+    public float getCurrentSpeed() {
         return currentSpeed;
     }
 
+    /**
+     * getter time
+     * @return time
+     */
     public long getTime() {
         return time;
     }
 
+    /**
+     * setter time
+     * @param time
+     */
     public void setTime(long time) {
         this.time = time;
     }
 
+    /**
+     * method which indicate if is the first passage to set lat & lon to compute distance
+     * @return boolean
+     */
     public boolean isFirstTime() {
         return isFirstTime;
     }
 
+    /**
+     * setter firstime
+     * @param isFirstTime
+     */
     public void setFirstTime(boolean isFirstTime) {
         this.isFirstTime = isFirstTime;
     }
 
+    /**
+     * getter currentLatitude
+     * @return currentLatitude
+     */
     public double getCurrentLatitude() {
         return currentLatitude;
     }
 
+    /**
+     * gette currentLongitude
+     * @return currentLongitude
+     */
     public double getCurrentLongitude() {
         return currentLongitude;
     }
@@ -231,10 +295,6 @@ public class DataHandling{
         }
         //Log.i("AD","nombre enregistrement tracklist dans le recording :"+trackPointsList.size());
         getTrackPointsList();
-    }
-
-    public void setTrackPointsList(ArrayList<TrackPoint> trackPointsList) {
-        this.trackPointsList = trackPointsList;
     }
 
     /**
@@ -330,7 +390,10 @@ public class DataHandling{
      * @return
      */
     public boolean timeFollowUp(int i, long currentTime, int segment){
-        if(currentTime<contentHandler.getTracks().get(i).getIntermediatesTime().get(segment).getTime()){
+        long intermediateTime = contentHandler.getTracks().get(i).getIntermediatesTime().get(segment).getTime();
+        Log.i("AD","intermediate Time : "+intermediateTime +" current time : "+currentTime);
+        if(currentTime<intermediateTime){
+
             return true;
         }
         return false;
@@ -342,5 +405,37 @@ public class DataHandling{
      */
     public double getDistanceM() {
         return distanceM;
+    }
+
+    /**
+     * getter location
+     * @return location
+     */
+    public Location getLocation() {
+        return location;
+    }
+
+    /**
+     * settter location
+     * @param location
+     */
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
+    /**
+     * getter timeStopped
+     * @return
+     */
+    public long getTimeStopped() {
+        return timeStopped;
+    }
+
+    /**
+     * setter timeStopped
+     * @param timeStopped
+     */
+    public void setTimeStopped(long timeStopped) {
+        this.timeStopped = timeStopped;
     }
 }

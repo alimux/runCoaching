@@ -6,12 +6,16 @@ import android.os.Bundle;
 import android.os.*;
 /**
  * @author Alexandre DUCREUX 13/02/2017
- * Splash screen Activity
+ * Splash screen Activity, launch activity
  */
 public class RunCoachingSplashScreenActivity extends AppCompatActivity {
 
     private final static int SPLASH_TIME_OUT = 2000;
 
+    /**
+     * after the time out, starting the home activity
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -37,7 +37,7 @@ public class GPSTracker extends Service implements LocationListener {
     private double currentLongitude = 0;
     private double lastLatitude = 0;
     private double lastLongitude = 0;
-    private double distance=0;
+    private double distance = 0;
     private Location lastlocation = new Location("last");
 
     //constants Time & Distance udpate
@@ -55,7 +55,7 @@ public class GPSTracker extends Service implements LocationListener {
         this.context = getBaseContext();
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestLocationUpdates(GPS_PROVIDER, MIN_TIME_UPDATES, (float) MIN_DISTANCE_UPDATE, this);
-        if(locationManager!=null) {
+        if (locationManager != null) {
             Log.i("AD", "Lancement du service GPS : " + locationManager);
         }
         super.onCreate();
@@ -64,11 +64,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public void onDestroy() {
-            locationManager.removeUpdates(this);
-            message = "Activité Terminée !";
-            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-            toast.show();
-
+        locationManager.removeUpdates(this);
         super.onDestroy();
     }
 
@@ -81,9 +77,9 @@ public class GPSTracker extends Service implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         datas = RunCoachingCourseActivity.getDatas();
-        if(locationManager!=null) {
+        if (locationManager != null) {
             if (datas.isRunning()) {
-                double hdop = (location.getAccuracy()/5);
+                double hdop = (location.getAccuracy() / 5);
                 currentLatitude = location.getLatitude();
                 currentLongitude = location.getLongitude();
 
@@ -94,13 +90,13 @@ public class GPSTracker extends Service implements LocationListener {
                     lastLongitude = currentLongitude;
                     datas.setFirstTime(false);
                 }
-                if( lastLatitude!=0 && lastLongitude !=0 && currentLatitude!=0 && currentLongitude!=0){
+                if (lastLatitude != 0 && lastLongitude != 0 && currentLatitude != 0 && currentLongitude != 0) {
                     lastlocation.setLatitude(lastLatitude);
                     lastlocation.setLongitude(lastLongitude);
                     distance = lastlocation.distanceTo(location);
                 }
 
-                if (location.getAccuracy() < distance ) {
+                if (location.getAccuracy() < distance) {
                     datas.addDistance(distance);
 
                     lastLatitude = currentLatitude;
@@ -121,7 +117,7 @@ public class GPSTracker extends Service implements LocationListener {
                     }
                 }
                 if (datas != null) {
-                    datas.recordTrackPoint(lastLatitude,lastLongitude,datas.getTime(),datas.getElevation(), datas.getCurrentSpeed(), datas.getCurrentLatitude(), datas.getSat());
+                    datas.recordTrackPoint(lastLatitude, lastLongitude, datas.getTime(), datas.getElevation(), datas.getCurrentSpeed(), datas.getCurrentLatitude(), datas.getSat());
                     datas.update();
                 }
             }
@@ -140,6 +136,9 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public void onProviderDisabled(String provider) {
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
 
     }
 
@@ -163,8 +162,6 @@ public class GPSTracker extends Service implements LocationListener {
         protected void onPostExecute(String message) {
             datas.setTimeStopped(timer);
         }
-
-
 
 
         /**

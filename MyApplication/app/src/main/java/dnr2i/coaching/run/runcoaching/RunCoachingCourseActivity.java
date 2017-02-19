@@ -57,7 +57,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
     //datas part
     private static DataHandling datas;
     private ArrayList<TrackPoint> trackPoints;
-    private int difficulty = 10;
+    private int difficulty;
     private long goalTime;
 
     //Activity type
@@ -122,6 +122,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         datas = new DataHandling(onGpsServiceUpdate, activityStatus);
 
         if (activityStatus == 1) {
+            chooseDifficulty();
             goal.setVisibility(View.VISIBLE);
             timeStatus.setVisibility(View.VISIBLE);
             goallbl.setVisibility(View.VISIBLE);
@@ -152,20 +153,6 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
                     durationChronometer.stop();
                     datas.setRunning(false);
                     stopService(new Intent(getBaseContext(), GPSTracker.class));
-                }
-
-                if (activityStatus == 1) {
-
-                    if (Utils.isExternalStorageWritable()) {
-                        message = "Mémoire en Lecture disponible \n Création du parcours virtuel en cours !";
-                        toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-                        toast.show();
-                        datas.createVirtualCourse(trackName.getText().toString() + "/" + trackName.getText().toString() + ".gpx", context);
-                        displayGoalTime();
-
-                    }
-
-
                 }
 
             }
@@ -243,7 +230,10 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         speedTextView.setText(String.valueOf(speed));
         coordinatesTextView.setText("lat:" + datas.getCurrentLatitude() + " lon:" + datas.getCurrentLongitude());
         trackpointsList = datas.getTrackPointsList();
-        displayFollowUp();
+        if (activityStatus == 1) {
+            displayFollowUp();
+        }
+
     }
 
     private void resetView() {
@@ -274,6 +264,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
     }
 
     private void displayGoalTime() {
+        Log.i("AD","Difficulté choisie : "+difficulty);
         goalTime = datas.goalTime(0, difficulty);
         int h = (int) (goalTime / 3600000);
         int m = (int) (goalTime - h * 3600000) / 60000;
@@ -291,39 +282,38 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         int currentSegment = 0;
         int currentDistance = (int) datas.getDistanceM();
 
-        long currentTime = SystemClock.elapsedRealtime()- durationChronometer.getBase();
+        long currentTime = SystemClock.elapsedRealtime() - durationChronometer.getBase();
         String message = "";
-        int coef=0;
-        Log.i("AD", "appel follow up :GoalTime:"+goalTime +" CurrentTime:"+currentTime);
+        int coef = 0;
+        Log.i("AD", "appel follow up :GoalTime:" + goalTime + " CurrentTime:" + currentTime);
 
-       if (datas.getContentHandler().getTracks().get(0).getSegmentType() == 0) {
-            coef=100;
-       }
-        else{
-           coef=1000;
-       }
-                if (currentSegment == segment) {
-                    if (datas.timeFollowUp(0, currentTime, currentSegment)) {
-                        message = "Bravo vous avez réussi votre entraînement avec Brio !";
-                    } else {
-                        message = "Oups, vous ferez mieux la prochaine fois !";
-                    }
-                    EndExistingCourse(message);
-                }
-                if(currentTime>=goalTime){
-                    timeStatus.setText("rapé...");
-                    Log.i("AD", "rapé!");
-                }
+        if (datas.getContentHandler().getTracks().get(0).getSegmentType() == 0) {
+            coef = 100;
+        } else {
+            coef = 1000;
+        }
+        if (currentSegment == segment) {
+            if (datas.timeFollowUp(0, currentTime, currentSegment)) {
+                message = "Bravo vous avez réussi votre entraînement avec Brio !";
+            } else {
+                message = "Oups, vous ferez mieux la prochaine fois !";
+            }
+            EndExistingCourse(message);
+        }
+        if (currentTime >= goalTime) {
+            timeStatus.setText("rapé...");
+            Log.i("AD", "rapé!");
+        }
 
-                if (currentDistance == (currentSegment + 1 * coef)) {
-                    if (datas.timeFollowUp(0, currentTime, currentSegment)) {
-                        timeStatus.setText("En avance !");
-                    } else {
-                        timeStatus.setText("En retard !");
-                    }
-                    currentSegment++;
-                    Log.i("AD", "Segement courant :"+currentSegment);
-                }
+        if (currentDistance == (currentSegment + 1 * coef)) {
+            if (datas.timeFollowUp(0, currentTime, currentSegment)) {
+                timeStatus.setText("En avance !");
+            } else {
+                timeStatus.setText("En retard !");
+            }
+            currentSegment++;
+            Log.i("AD", "Segement courant :" + currentSegment);
+        }
 
     }
 
@@ -351,6 +341,86 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         alertDialog.show();
 
     }
+
+    public void chooseDifficulty() {
+        if (Utils.isExternalStorageWritable()) {
+            message = "Mémoire en Lecture disponible \n Création du parcours virtuel en cours !";
+            toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+            toast.show();
+            datas.createVirtualCourse(trackName.getText().toString() + "/" + trackName.getText().toString() + ".gpx", context);
+
+
+            final String[] choices = {"Sans difficulté", "Très facile", "Facile", "Moyen", "Difficile", "Champion", "Surhomme"};
+            long referenceTime = datas.getContentHandler().getTracks().get(0).getTotalTime();
+
+            int h = (int) (referenceTime / 3600000);
+            int m = (int) (referenceTime - h * 3600000) / 60000;
+            int s = (int) (referenceTime - h * 3600000 - m * 60000) / 1000;
+            String hh = h < 10 ? "0" + h : h + "";
+            String mm = m < 10 ? "0" + m : m + "";
+            String ss = s < 10 ? "0" + s : s + "";
+
+            String displayTotalTime = hh + ":" + mm + ":" + ss;
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+            Log.i("AD","Temps de référence : "+displayTotalTime);
+            //Settings
+            alertDialog.setTitle("Sélectionner votre difficulté :\nRéférence : "+displayTotalTime);
+            alertDialog.setIcon(R.drawable.mr_ic_play_dark);
+            alertDialog.setItems(choices, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case 0:
+                            difficulty = 0;
+                            displayGoalTime();
+                            break;
+                        case 1:
+                            difficulty = 2;
+                            displayGoalTime();
+                            break;
+                        case 2:
+                            difficulty = 4;
+                            displayGoalTime();
+                            break;
+                        case 3:
+                            difficulty = 10;
+                            displayGoalTime();
+                            break;
+                        case 4:
+                            difficulty = 25;
+                            displayGoalTime();
+                            break;
+                        case 5 :
+                            difficulty = 35;
+                            displayGoalTime();
+                            break;
+                        case 6 :
+                            difficulty = 50;
+                            displayGoalTime();
+                            break;
+                        default:
+                            difficulty = 0;
+                            displayGoalTime();
+                            break;
+                    }
+                }
+            });
+
+            alertDialog.show();
+
+        }
+    }
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        datas.setRunning(false);
+        durationChronometer.stop();
+        datas = new DataHandling(onGpsServiceUpdate, activityStatus);
+        stopService(new Intent(getBaseContext(), GPSTracker.class));
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

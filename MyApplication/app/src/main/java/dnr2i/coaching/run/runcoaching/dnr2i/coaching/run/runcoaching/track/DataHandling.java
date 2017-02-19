@@ -164,36 +164,56 @@ public class DataHandling{
         this.currentLatitude = currentLatitude;
     }
 
+    /**
+     * setter current longitude
+     * @param currentLongitude
+     */
     public void setCurrentLongitude(double currentLongitude) {
         this.currentLongitude = currentLongitude;
     }
 
+    /**
+     * getter elevation
+     * @return
+     */
     public double getElevation() {
         return elevation;
     }
 
+    /**
+     * setter elevation
+     * @param elevation
+     */
     public void setElevation(double elevation) {
         this.elevation = elevation;
     }
 
-    public double getHdop() {
-        return hdop;
-    }
-
+    /**
+     * setter hdop
+     * @param hdop
+     */
     public void setHdop(double hdop) {
         this.hdop = hdop;
     }
 
+    /**
+     * getter satellite
+     * @return
+     */
     public int getSat() {
         return sat;
     }
 
+    /**
+     * setter satellite
+     * @param sat
+     */
     public void setSat(int sat) {
         this.sat = sat;
     }
 
     /**
-     * Methods which reccord temporary track data
+     * Methods which reccord temporary track data before register in a gpx file
      * @param lat
      * @param lon
      * @param time
@@ -217,11 +237,20 @@ public class DataHandling{
         this.trackPointsList = trackPointsList;
     }
 
+    /**
+     * methods which returns trackPointsList
+     * @return
+     */
     public ArrayList<TrackPoint> getTrackPointsList() {
        // Log.i("AD","nombre enregistrement tracklist getter :"+trackPointsList.size());
         return this.trackPointsList;
     }
 
+    /**
+     * methods which parses a course selected by user
+     * @param filename
+     * @param context
+     */
     public  void createVirtualCourse(String filename, Context context){
 
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -253,22 +282,53 @@ public class DataHandling{
 
     }
 
+    /**
+     * methods which returns content handler & access to virtual track
+     * @return
+     */
     public ContentHandler getContentHandler() {
         return contentHandler;
     }
 
+    /**
+     * methods which pre-computes datas if an existing course is selected
+     * @param i
+     */
     public void computeVirtualCourseDatas(int i){
         contentHandler.getTracks().get(i).setTotalDistance();
         contentHandler.getTracks().get(i).setTotalTime();
         contentHandler.getTracks().get(i).setIntermediatesTime();
     }
 
+    /**
+     * methods which returns a goal time, settings by a user difficulty's choices
+     * @param i
+     * @param difficulty
+     * @return
+     */
     public long goalTime(int i, int difficulty){
         long totalTime = contentHandler.getTracks().get(i).getTotalTime();
-        long goalTime = totalTime - (1-(difficulty/100));
+        Log.i("AD","Total Time =>"+totalTime);
+        long goalTime, tmp;
+        if(difficulty==0){
+            goalTime = totalTime;
+            Log.i("AD","GoalTime Sans difficulté =>"+goalTime+" Total Time =>"+totalTime);
+        }else {
+            tmp = totalTime * difficulty/100;
+            goalTime = totalTime - tmp;
+            Log.i("AD","GoalTime avec difficulté=>"+goalTime+" Total Time =>"+totalTime);
+        }
+
         return goalTime;
     }
 
+    /**
+     * methods which returns if user is early or late
+     * @param i
+     * @param currentTime
+     * @param segment
+     * @return
+     */
     public boolean timeFollowUp(int i, long currentTime, int segment){
         if(currentTime<contentHandler.getTracks().get(i).getIntermediatesTime().get(segment).getTime()){
             return true;
@@ -276,6 +336,10 @@ public class DataHandling{
         return false;
     }
 
+    /**
+     * returns the distance in meter
+     * @return
+     */
     public double getDistanceM() {
         return distanceM;
     }

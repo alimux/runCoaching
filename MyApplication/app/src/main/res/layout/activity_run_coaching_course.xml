@@ -135,12 +135,10 @@
         android:text="@string/timeStatus"
         android:textSize="20sp"
         android:gravity="center_horizontal"
-        android:layout_width="90dp"
+        android:layout_width="100dp"
         android:layout_height="25dp"
         android:id="@+id/timeStatus"
-        android:layout_marginLeft="100dp"
         android:layout_alignBaseline="@+id/goal"
         android:layout_alignBottom="@+id/goal"
-        android:layout_toEndOf="@+id/coordinates"
-        android:layout_marginStart="15dp" />
+        android:layout_alignEnd="@+id/trackName" />
 </RelativeLayout>

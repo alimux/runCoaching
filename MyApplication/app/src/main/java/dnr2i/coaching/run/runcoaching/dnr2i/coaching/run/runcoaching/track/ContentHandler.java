@@ -26,7 +26,7 @@ public class ContentHandler extends DefaultHandler {
 
 
     public ContentHandler(){
-        Log.i("AD","ContentHandler : initialisation...");
+        //Log.i("AD","ContentHandler : initialisation...");
         tracks = new ArrayList<>();
     }
 
@@ -51,7 +51,7 @@ public class ContentHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException{
         if(qName.equalsIgnoreCase("time")){
-                time=Long.valueOf(time);
+                time=Long.valueOf(characters);
         }
         if(qName.equalsIgnoreCase("trkpt")){
             tracks.get(tracks.size()-1).addTrackPoint(new TrackPoint(latitude, longitude, time ));

@@ -77,6 +77,7 @@ public class Track {
     /**
      * methods wich returns globa time of a track
      */
+
     public void setTotalTime(){
         totalTime =  trackPoints.get(trackPoints.size()-1).getTime() - trackPoints.get(0).getTime();
     }
@@ -87,7 +88,7 @@ public class Track {
     public void setIntermediatesTime(){
 
         setSegment(totalDistance);
-        Log.i("AD", "taile de trackpoints : "+trackPoints.size());
+        //Log.i("AD", "taile de trackpoints : "+trackPoints.size());
         double tmpTotalDistance = 0;
         int j=1;
         for (int i=0; i<trackPoints.size()-1;i++){
@@ -96,36 +97,35 @@ public class Track {
             float[] results = new float[3];
             Location.distanceBetween(trackpointA.getLatitude(), trackpointA.getLongitude(), trackPointB.getLatitude(), trackPointB.getLongitude(), results);
             tmpTotalDistance+=results[0];
-            Log.i("AD", "Distance / tour "+tmpTotalDistance);
+           // Log.i("AD", "Distance / tour "+tmpTotalDistance);
             if(segmentType==0) {
-                Log.i("AD", "Segment type 0");
+                //Log.i("AD", "Segment type 0");
                 if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("00")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("00"))-1 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("01"))) {
-                    Log.i("AD", "MATCH !!!!!!!!!!");
+                    //Log.i("AD", "MATCH !!!!!!!!!!");
                     this.intermediatesTime.add(trackPoints.get(i));
-                    Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
+                    //Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
                     j++;
                 }
             }
             else {
-                Log.i("AD", "Segment type 1");
+                //Log.i("AD", "Segment type 1");
                 if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("000")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("000"))-1 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("001"))) {
-                    Log.i("AD", "MATCH !!!!!!!!!!");
+                    //Log.i("AD", "MATCH !!!!!!!!!!");
                     this.intermediatesTime.add(trackPoints.get(i));
-                    Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
+                    //Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
                     j++;
                 }
             }
 
         }
-        Log.i("AD", "valeur de j "+j);
+        //Log.i("AD", "valeur de j "+j);
         if (segmentNumber < j+1) {
-            Log.i("AD", "manque 1 segment");
             this.intermediatesTime.add(trackPoints.get(trackPoints.size() - 1));
         }
 
-        Log.i("AD", "nombre d'enregistrement dans le tableau des références temporelles : "+this.intermediatesTime.size());
+        //Log.i("AD", "nombre d'enregistrement dans le tableau des références temporelles : "+this.intermediatesTime.size());
         for(int k=0;k<this.intermediatesTime.size();k++){
-            Log.i("AD", "Trackpoint enregistré latitude : "+this.intermediatesTime.get(k).getLatitude());
+            //Log.i("AD", "Trackpoint enregistré latitude : "+this.intermediatesTime.get(k).getLatitude());
         }
 
     }
@@ -140,7 +140,7 @@ public class Track {
             segmentNumber = (int) Math.ceil(totalDistance / 1000);
             segmentType = 1;
         }
-        Log.i("AD", "nombre de segment : "+segmentNumber);
+        //Log.i("AD", "nombre de segment : "+segmentNumber);
     }
 
     public double getTotalDistance() {
@@ -153,6 +153,14 @@ public class Track {
 
     public int getSegmentNumber() {
         return segmentNumber;
+    }
+
+    public ArrayList<TrackPoint> getIntermediatesTime() {
+        return intermediatesTime;
+    }
+
+    public int getSegmentType() {
+        return segmentType;
     }
 }
 

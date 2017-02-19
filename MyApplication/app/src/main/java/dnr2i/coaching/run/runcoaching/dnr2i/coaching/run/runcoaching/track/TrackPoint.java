@@ -15,6 +15,7 @@ public class TrackPoint {
     private double hdop;
     private int sat;
 
+
     /**
      * constructor
      * @param latitude
@@ -36,6 +37,7 @@ public class TrackPoint {
         this.longitude = longitude;
         this.time = time;
     }
+
 
     /**
      * getter lattitude

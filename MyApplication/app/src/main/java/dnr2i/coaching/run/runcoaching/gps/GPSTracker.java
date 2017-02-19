@@ -44,9 +44,6 @@ public class GPSTracker extends Service implements LocationListener {
     private final static double MIN_DISTANCE_UPDATE = 0;
     private final static long MIN_TIME_UPDATES = 100;
 
-
-
-
     //for toast
     private CharSequence message = "";
     private Toast toast;
@@ -113,6 +110,7 @@ public class GPSTracker extends Service implements LocationListener {
                     datas.setHdop(hdop);
                     datas.setElevation(location.getAltitude());
                     datas.setSat(location.getExtras().getInt("satellites"));
+
                     datas.setTime(location.getTime());
                 }
 
@@ -197,25 +195,7 @@ public class GPSTracker extends Service implements LocationListener {
             alertDialog.show();
         }
 
-        // getters
 
-        /**
-         * to getCurrentLatitude
-         *
-         * @return currentLatitude
-         */
-        public double getCurrentLatitude() {
-            return currentLatitude;
-        }
-
-        /**
-         * to get currentLongitude
-         *
-         * @return currentLongitude
-         */
-        public double getCurrentLongitude() {
-            return currentLongitude;
-        }
     }
 }
 

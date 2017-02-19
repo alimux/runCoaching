@@ -263,4 +263,20 @@ public class DataHandling{
         contentHandler.getTracks().get(i).setIntermediatesTime();
     }
 
+    public long goalTime(int i, int difficulty){
+        long totalTime = contentHandler.getTracks().get(i).getTotalTime();
+        long goalTime = totalTime - (1-(difficulty/100));
+        return goalTime;
+    }
+
+    public boolean timeFollowUp(int i, long currentTime, int segment){
+        if(currentTime<contentHandler.getTracks().get(i).getIntermediatesTime().get(segment).getTime()){
+            return true;
+        }
+        return false;
+    }
+
+    public double getDistanceM() {
+        return distanceM;
+    }
 }

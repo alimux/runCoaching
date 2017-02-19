@@ -2,7 +2,9 @@ package dnr2i.coaching.run.runcoaching;
 
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -55,6 +57,8 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
     //datas part
     private static DataHandling datas;
     private ArrayList<TrackPoint> trackPoints;
+    private int difficulty = 10;
+    private long goalTime;
 
     //Activity type
     private int activityStatus;
@@ -77,11 +81,10 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         setContentView(R.layout.activity_run_coaching_course);
 
         //settings permission requestion to read file
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 //permission was refused by user
-            }
-            else {
+            } else {
                 //requestion permissions
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_READEABLE_STORAGE);
             }
@@ -95,9 +98,9 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         speedTextView = (TextView) findViewById(R.id.speed);
         distanceTextView = (TextView) findViewById(R.id.distance);
         durationChronometer = (Chronometer) findViewById(R.id.duration);
-        goal =(TextView)findViewById(R.id.goal);
-        timeStatus = (TextView)findViewById(R.id.timeStatus);
-        goallbl = (TextView)findViewById(R.id.goallbl);
+        goal = (TextView) findViewById(R.id.goal);
+        timeStatus = (TextView) findViewById(R.id.timeStatus);
+        goallbl = (TextView) findViewById(R.id.goallbl);
         context = this;
         Intent intent = getIntent();
         Bundle b = intent.getExtras();
@@ -106,7 +109,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
             String trackNameExtra = (String) b.get("trackName");
             String tmpStatus = (String) b.get("courseStatus");
             activityStatus = Integer.valueOf(tmpStatus);
-            Log.i("AD", "ActivityStatus :"+activityStatus);
+            Log.i("AD", "ActivityStatus :" + activityStatus);
             trackName.setText(trackNameExtra);
         }
         onGpsServiceUpdate = new DataHandling.onGPSServiceUpdate() {
@@ -118,12 +121,11 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         };
         datas = new DataHandling(onGpsServiceUpdate, activityStatus);
 
-        if(activityStatus==1){
+        if (activityStatus == 1) {
             goal.setVisibility(View.VISIBLE);
             timeStatus.setVisibility(View.VISIBLE);
             goallbl.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             goal.setVisibility(View.INVISIBLE);
             timeStatus.setVisibility(View.INVISIBLE);
             goallbl.setVisibility(View.INVISIBLE);
@@ -152,20 +154,15 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
                     stopService(new Intent(getBaseContext(), GPSTracker.class));
                 }
 
-                if(activityStatus==1){
+                if (activityStatus == 1) {
 
-                    message = "Status "+activityStatus;
-                    toast = Toast.makeText(context, message,Toast.LENGTH_LONG);
-                    toast.show();
-                    if(Utils.isExternalStorageWritable()){
-                        message ="Mémoire en Lecture disponible \n Création du parcours virtuel en cours !";
-                        toast = Toast.makeText(context, message,Toast.LENGTH_SHORT);
+                    if (Utils.isExternalStorageWritable()) {
+                        message = "Mémoire en Lecture disponible \n Création du parcours virtuel en cours !";
+                        toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
                         toast.show();
-                        datas.createVirtualCourse(trackName.getText().toString()+"/"+trackName.getText().toString()+".gpx", context);
-                        message = "Durée total du parcours pré enregistré : "+datas.getContentHandler().getTracks().get(0).getTotalDistance()+
-                        "\n nombre de segments : "+datas.getContentHandler().getTracks().get(0).getSegmentNumber();
-                        toast = Toast.makeText(context, message,Toast.LENGTH_LONG);
-                        toast.show();
+                        datas.createVirtualCourse(trackName.getText().toString() + "/" + trackName.getText().toString() + ".gpx", context);
+                        displayGoalTime();
+
                     }
 
 
@@ -246,6 +243,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         speedTextView.setText(String.valueOf(speed));
         coordinatesTextView.setText("lat:" + datas.getCurrentLatitude() + " lon:" + datas.getCurrentLongitude());
         trackpointsList = datas.getTrackPointsList();
+        displayFollowUp();
     }
 
     private void resetView() {
@@ -253,6 +251,10 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         durationChronometer.setText("00:00:00");
         coordinatesTextView.setText("Coordinates");
         distanceTextView.setText("0.0km");
+        if (activityStatus == 1) {
+            goal.setText("");
+            timeStatus.setText("");
+        }
     }
 
 
@@ -271,14 +273,89 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     }
 
-    private void trainingMessage(){
+    private void displayGoalTime() {
+        goalTime = datas.goalTime(0, difficulty);
+        int h = (int) (goalTime / 3600000);
+        int m = (int) (goalTime - h * 3600000) / 60000;
+        int s = (int) (goalTime - h * 3600000 - m * 60000) / 1000;
+        String hh = h < 10 ? "0" + h : h + "";
+        String mm = m < 10 ? "0" + m : m + "";
+        String ss = s < 10 ? "0" + s : s + "";
+
+        goal.setText(hh + ":" + mm + ":" + ss);
+    }
+
+    private void displayFollowUp() {
+
+        int segment = datas.getContentHandler().getTracks().get(0).getSegmentNumber();
+        int currentSegment = 0;
+        int currentDistance = (int) datas.getDistanceM();
+
+        long currentTime = SystemClock.elapsedRealtime()- durationChronometer.getBase();
+        String message = "";
+        int coef=0;
+        Log.i("AD", "appel follow up :GoalTime:"+goalTime +" CurrentTime:"+currentTime);
+
+       if (datas.getContentHandler().getTracks().get(0).getSegmentType() == 0) {
+            coef=100;
+       }
+        else{
+           coef=1000;
+       }
+                if (currentSegment == segment) {
+                    if (datas.timeFollowUp(0, currentTime, currentSegment)) {
+                        message = "Bravo vous avez réussi votre entraînement avec Brio !";
+                    } else {
+                        message = "Oups, vous ferez mieux la prochaine fois !";
+                    }
+                    EndExistingCourse(message);
+                }
+                if(currentTime>=goalTime){
+                    timeStatus.setText("rapé...");
+                    Log.i("AD", "rapé!");
+                }
+
+                if (currentDistance == (currentSegment + 1 * coef)) {
+                    if (datas.timeFollowUp(0, currentTime, currentSegment)) {
+                        timeStatus.setText("En avance !");
+                    } else {
+                        timeStatus.setText("En retard !");
+                    }
+                    currentSegment++;
+                    Log.i("AD", "Segement courant :"+currentSegment);
+                }
+
+    }
+
+    public void EndExistingCourse(String message) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+
+        //Settings
+        alertDialog.setTitle("Course Terminée");
+        alertDialog.setIcon(R.drawable.mr_ic_play_dark);
+        alertDialog.setMessage(message + "\n voulez-vous enregistrer votre performance?");
+        alertDialog.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                recordTrack();
+            }
+        });
+
+        //if cancel
+        alertDialog.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        alertDialog.show();
 
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
+        switch (requestCode) {
             case PERMISSIONS_REQUEST_READEABLE_STORAGE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //permission granted

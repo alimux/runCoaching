@@ -140,5 +140,6 @@
         android:id="@+id/timeStatus"
         android:layout_alignBaseline="@+id/goal"
         android:layout_alignBottom="@+id/goal"
-        android:layout_alignEnd="@+id/trackName" />
+        android:layout_marginLeft="200dp" />
+
 </RelativeLayout>

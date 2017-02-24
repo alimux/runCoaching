@@ -48,7 +48,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
 
     //toast
     private CharSequence message;
-    private CharSequence endMessage;
+    private String endMessage;
     private Toast toast;
 
     //context
@@ -60,6 +60,8 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
     private ArrayList<TrackPoint> trackPoints;
     private int difficulty;
     private long goalTime;
+    private int currentSegment = 0;
+    private int distanceSegmentExpected=0;
 
     //Activity type
     private int activityStatus;
@@ -304,43 +306,72 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
     private void displayFollowUp() {
 
         int segment = datas.getContentHandler().getTracks().get(0).getSegmentNumber();
-        int currentSegment = 0;
+
         int currentDistance = (int) datas.getDistanceM();
-        //int currentDistance = 100;
+        //int currentDistance = 0;
+
+        //currentDistance = 95;
+
+
         long currentTime = SystemClock.elapsedRealtime() - durationChronometer.getBase();
+        //currentTime = 87330;
         int coef;
-        int distanceSegmentExpected;
-        //Log.i("AD", "appel follow up :GoalTime:" + goalTime + " CurrentTime:" + currentTime+ "currentSegment"+currentSegment+"current Distance"+currentDistance);
+
+        int distanceSegmentExpectedLower;
+        int distanceSegementExpectedhigher;
+
+
+        Log.i("AD", "appel follow up :GoalTime:" + goalTime + "segment"+segment+ " CurrentTime:" + currentTime+ "currentSegment"+currentSegment+"current Distance"+currentDistance);
 
         if (datas.getContentHandler().getTracks().get(0).getSegmentType() == 0) {
             coef = 100;
         } else {
             coef = 1000;
         }
+
+
         if (currentSegment == segment) {
-            if (datas.timeFollowUp(0, currentTime, currentSegment)) {
+            Log.i("AD", "segment = segment");
+            if (datas.timeFollowUp(0, currentTime, currentSegment-1)) {
                 endMessage = "Bravo vous avez réussi votre entraînement avec Brio !";
+                btnStop.performClick();
             } else {
                 endMessage = "Oups, vous ferez mieux la prochaine fois !";
+                btnStop.performClick();
             }
-
+            //btnStop.performClick();
+        }else if(currentSegment<segment) {
+            Log.i("AD", "dedans");
+            distanceSegmentExpected = (1 + currentSegment) * coef;
         }
+
         if (currentTime >= goalTime) {
             timeStatus.setText("rapé...");
             Log.i("AD", "rapé!");
         }
-        distanceSegmentExpected = (1+currentSegment)*coef;
-        //Log.i("AD", "Distance du segment courant attendu :" + distanceSegmentExpected);
-        if (currentDistance == distanceSegmentExpected) {
+
+
+        distanceSegmentExpectedLower = distanceSegmentExpected - 10;
+        distanceSegementExpectedhigher = distanceSegmentExpected +15;
+
+        Log.i("AD", "Distance du segment courant attendu :" + distanceSegmentExpected+" Distance mini :"+distanceSegmentExpectedLower+" distance maxi :"+distanceSegementExpectedhigher);
+        if (currentDistance >= distanceSegmentExpectedLower && currentDistance <= distanceSegementExpectedhigher) {
             if (datas.timeFollowUp(0, currentTime, currentSegment)) {
-                timeStatus.setText("En avance !");
+                timeStatus.setText("S:"+currentSegment+" Avance");
+
             } else {
-                timeStatus.setText("En retard !");
+                timeStatus.setText("S:"+currentSegment+" Retard");
             }
             currentSegment++;
-            Log.i("AD", "Segement courant :" + currentSegment);
+            Log.i("AD", "Segment courant :" + currentSegment);
+            updateCurrentSegmentExpected(currentSegment, coef);
         }
 
+    }
+    public int updateCurrentSegmentExpected(int currentSegment, int coef){
+        int distanceSegmentExpected = (1+currentSegment)*coef;
+        Log.i("AD", "Nouvelle distance Expected :" + distanceSegmentExpected);
+        return distanceSegmentExpected ;
     }
 
     /**
@@ -353,7 +384,7 @@ public class RunCoachingCourseActivity extends AppCompatActivity {
         //Settings
         alertDialog.setTitle("Course Terminée\n"+endMessage);
         alertDialog.setIcon(R.drawable.mr_ic_play_dark);
-        alertDialog.setMessage(message + "\n voulez-vous enregistrer votre performance?");
+        alertDialog.setMessage(endMessage + "\n voulez-vous enregistrer votre performance?");
         alertDialog.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

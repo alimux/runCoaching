@@ -110,9 +110,10 @@ public class GPSTracker extends Service implements LocationListener {
                 lastlocation.setLatitude(lastLatitude);
                 lastlocation.setLongitude(lastLongitude);
                 distance = lastlocation.distanceTo(location);
-
+                //distance = distance+0.5;
+                //datas.addDistance(distance);
                 if (location.hasSpeed()) {
-                    Log.i("AD", "Hasspeed : "+location.hasSpeed()+"Location accuracy : " + (location.getAccuracy()+5) + " distance : " + distance);
+                    //Log.i("AD", "Hasspeed : "+location.hasSpeed()+"Location accuracy : " + (location.getAccuracy()+5) + " distance : " + distance);
                     speed = location.getSpeed();
                     datas.setCurrentSpeed(speed);
                     if (location.getSpeed() == 0) {
@@ -133,7 +134,7 @@ public class GPSTracker extends Service implements LocationListener {
                         }
                     }
                 }
-                Log.i("AD", "Etat de datas=" + datas + "\n test time system " + System.currentTimeMillis() + "\n Update time" + datas.getTime() + "infos : speed:" + datas.getCurrentSpeed() + "\n lat:" + datas.getCurrentLatitude() + "\n lon:" + datas.getCurrentLongitude());
+               // Log.i("AD", "Etat de datas=" + datas + "\n test time system " + System.currentTimeMillis() + "\n Update time" + datas.getTime() + "infos : speed:" + datas.getCurrentSpeed() + "\n lat:" + datas.getCurrentLatitude() + "\n lon:" + datas.getCurrentLongitude());
                 if (datas != null) {
                     datas.recordTrackPoint(lastLatitude, lastLongitude, datas.getTime(), datas.getElevation(), datas.getCurrentSpeed(), datas.getCurrentLatitude(), datas.getSat());
                     datas.update();

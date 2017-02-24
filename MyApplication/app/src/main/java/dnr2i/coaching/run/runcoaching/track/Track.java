@@ -100,7 +100,7 @@ public class Track {
             Log.i("AD", "Distance / tour "+tmpTotalDistance);
             if(segmentType==0) {
                 //Log.i("AD", "Segment type 0");
-                if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("00")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("00"))-1 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("01"))) {
+                if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("00")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("00"))-5 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("10"))) {
                     //Log.i("AD", "MATCH !!!!!!!!!!");
                     this.intermediatesTime.add(trackPoints.get(i));
                     Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
@@ -109,7 +109,7 @@ public class Track {
             }
             else {
                 //Log.i("AD", "Segment type 1");
-                if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("000")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("000"))-1 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("001"))) {
+                if (tmpTotalDistance == Integer.valueOf(String.valueOf(j) + String.valueOf("000")) || tmpTotalDistance > Integer.valueOf(String.valueOf(j) + String.valueOf("000"))-5 && tmpTotalDistance < Integer.valueOf(String.valueOf(j) + String.valueOf("010"))) {
                     //Log.i("AD", "MATCH !!!!!!!!!!");
                     this.intermediatesTime.add(trackPoints.get(i));
                     Log.i("AD", "Ajout d'une référence temporelle : "+trackPoints.get(i));
@@ -125,7 +125,7 @@ public class Track {
 
         Log.i("AD", "nombre d'enregistrement dans le tableau des références temporelles : "+this.intermediatesTime.size());
         for(int k=0;k<this.intermediatesTime.size();k++){
-            //Log.i("AD", "Trackpoint enregistré latitude : "+this.intermediatesTime.get(k).getLatitude());
+            Log.i("AD", "Trackpoint enregistré latitude : "+this.intermediatesTime.get(k).getTime());
         }
 
     }
